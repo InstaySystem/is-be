@@ -3,6 +3,7 @@ package container
 import (
 	"github.com/InstaySystem/is-be/internal/config"
 	"github.com/InstaySystem/is-be/internal/initialization"
+	"github.com/InstaySystem/is-be/internal/provider/jwt"
 	"github.com/InstaySystem/is-be/pkg/bcrypt"
 	"github.com/InstaySystem/is-be/pkg/snowflake"
 	"github.com/sony/sonyflake/v2"
@@ -20,8 +21,10 @@ func NewContainer(cfg *config.Config, db *gorm.DB, s3 *initialization.S3, sf *so
 	sfGen := snowflake.NewGenerator(sf)
 	bHash := bcrypt.NewHasher(10)
 
+	jwtProvider := jwt.NewJWTProvider(cfg.JWT.SecretKey)
+
 	fileCtn := NewFileContainer(cfg, s3, logger)
-	authCtn := NewAuthContainer(db)
+	authCtn := NewAuthContainer(cfg, db, logger, bHash, jwtProvider)
 	userCtn := NewUserContainer(db, sfGen, logger, bHash)
 
 	return &Container{

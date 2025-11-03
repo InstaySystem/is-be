@@ -2,6 +2,7 @@ package implement
 
 import (
 	"context"
+	"errors"
 
 	"github.com/InstaySystem/is-be/internal/model"
 	"github.com/InstaySystem/is-be/internal/repository"
@@ -18,4 +19,16 @@ func NewUserRepository(db *gorm.DB) repository.UserRepository {
 
 func (r *userRepoImpl) Create(ctx context.Context, user *model.User) error {
 	return r.db.WithContext(ctx).Create(user).Error
+}
+
+func (r *userRepoImpl) FindByUsername(ctx context.Context, username string) (*model.User, error) {
+	var user model.User
+	if err := r.db.WithContext(ctx).Where("username = ?", username).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &user, nil
 }

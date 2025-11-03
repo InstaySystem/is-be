@@ -34,7 +34,7 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 	if err != nil {
 		switch err {
 		case common.ErrEmailAlreadyExists, common.ErrUsernameAlreadyExists:
-			common.ToAPIResponse(c, http.StatusBadRequest, err.Error(), nil)
+			common.ToAPIResponse(c, http.StatusConflict, err.Error(), nil)
 		default:
 			common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
 		}

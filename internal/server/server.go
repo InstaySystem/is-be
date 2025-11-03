@@ -81,6 +81,7 @@ func NewServer(cfg *config.Config) (*Server, error) {
 
 	router.FileRouter(api, ctn.FileCtn.Hdl)
 	router.UserRouter(api, ctn.UserCtn.Hdl)
+	router.AuthRouter(api, ctn.AuthCtn.Hdl)
 
 	addr := fmt.Sprintf(":%d", cfg.Server.Port)
 

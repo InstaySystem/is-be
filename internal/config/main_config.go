@@ -1,12 +1,24 @@
 package config
 
-import "github.com/spf13/viper"
+import (
+	"time"
+
+	"github.com/spf13/viper"
+)
 
 type Config struct {
 	Server struct {
 		APIPrefix string `mapstructure:"api_prefix"`
 		Port      int    `mapstructure:"port"`
 	} `mapstructure:"server"`
+
+	JWT struct {
+		AccessName       string        `mapstructure:"access_name"`
+		RefreshName      string        `mapstructure:"refresh_name"`
+		SecretKey        string        `mapstructure:"secret_key"`
+		AccessExpiresIn  time.Duration `mapstructure:"access_expires_in"`
+		RefreshExpiresIn time.Duration `mapstructure:"refresh_expires_in"`
+	}
 
 	Redis struct {
 		Host     string `mapstructure:"host"`
