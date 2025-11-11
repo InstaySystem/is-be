@@ -57,3 +57,13 @@ func (s *departmentSvcImpl) CreateDepartment(ctx context.Context, userID int64, 
 
 	return id, nil
 }
+
+func (s *departmentSvcImpl) GetDepartments(ctx context.Context) ([]*model.Department, error) {
+	departments, err := s.departmentRepo.FindAllWithCreatedByAndUpdatedBy(ctx)
+	if err != nil {
+		s.logger.Error("get departments failed", zap.Error(err))
+		return nil, err
+	}
+
+	return departments, nil
+}

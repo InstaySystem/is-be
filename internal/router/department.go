@@ -10,5 +10,7 @@ func DepartmentRouter(rg *gin.RouterGroup, hdl *handler.DepartmentHandler, authM
 	department := rg.Group("/departments", authMid.IsAuthentication(), authMid.HasAnyRole([]string{"admin"}))
 	{
 		department.POST("", hdl.CreateDepartment)
+
+		department.GET("", hdl.GetDepartments)
 	}
 }

@@ -8,4 +8,6 @@ import (
 
 type DepartmentRepository interface {
 	Create(ctx context.Context, department *model.Department) error
+
+	FindAllWithCreatedByAndUpdatedBy(ctx context.Context) ([]*model.Department, error)
 }

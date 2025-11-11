@@ -23,6 +23,7 @@ type Container struct {
 	UserCtn       *UserContainer
 	DepartmentCtn *DepartmentContainer
 	AuthMid       *middleware.AuthMiddleware
+	ReqMid        *middleware.RequestMiddleware
 	SMTPProvider  smtp.SMTPProvider
 	MQProvider    mq.MessageQueueProvider
 }
@@ -50,6 +51,7 @@ func NewContainer(
 	departmentCtn := NewDepartmentContainer(db, sfGen, logger)
 
 	authMid := middleware.NewAuthMiddleware(cfg.JWT.AccessName, cfg.JWT.RefreshName, userCtn.Repo, jwtProvider, logger, cacheProvider)
+	reqMid := middleware.NewRequestMiddleware(logger)
 
 	return &Container{
 		fileCtn,
@@ -57,6 +59,7 @@ func NewContainer(
 		userCtn,
 		departmentCtn,
 		authMid,
+		reqMid,
 		smtpProvider,
 		mqProvider,
 	}

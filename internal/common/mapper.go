@@ -14,7 +14,7 @@ func ToUserResponse(user *model.User) *types.UserResponse {
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
 		Role:      user.Role,
-		IsActive: user.IsActive,
+		IsActive:  user.IsActive,
 		CreatedAt: user.CreatedAt,
 	}
 }
@@ -28,7 +28,7 @@ func ToUserData(user *model.User) *types.UserData {
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
 		Role:      user.Role,
-		IsActive: user.IsActive,
+		IsActive:  user.IsActive,
 		CreatedAt: user.CreatedAt,
 	}
 }
@@ -39,7 +39,7 @@ func ToSimpleUserResponse(user *model.User) *types.SimpleUserResponse {
 		FirstName: user.FirstName,
 		LastName:  user.LastName,
 		Role:      user.Role,
-		IsActive: user.IsActive,
+		IsActive:  user.IsActive,
 		CreatedAt: user.CreatedAt,
 	}
 }
@@ -49,12 +49,12 @@ func ToSimpleUsersResponse(users []*model.User) []*types.SimpleUserResponse {
 		return make([]*types.SimpleUserResponse, 0)
 	}
 
-	userRes := make([]*types.SimpleUserResponse, 0, len(users))
-	for i := range len(users) {
-		userRes = append(userRes, ToSimpleUserResponse(users[i]))
+	usersRes := make([]*types.SimpleUserResponse, 0, len(users))
+	for _, user := range users {
+		usersRes = append(usersRes, ToSimpleUserResponse(user))
 	}
 
-	return userRes
+	return usersRes
 }
 
 func ToUserListResponse(users []*model.User, meta *types.MetaResponse) *types.UserListResponse {
@@ -62,4 +62,30 @@ func ToUserListResponse(users []*model.User, meta *types.MetaResponse) *types.Us
 		Users: ToSimpleUsersResponse(users),
 		Meta:  meta,
 	}
+}
+
+func ToDepartmentResponse(department *model.Department) *types.DepartmentResponse {
+	return &types.DepartmentResponse{
+		ID:          department.ID,
+		Name:        department.Name,
+		DisplayName: department.DisplayName,
+		Description: department.Description,
+		CreatedAt:   department.CreatedAt,
+		UpdatedAt:   department.UpdatedAt,
+		CreatedBy:   ToSimpleUserResponse(department.CreatedBy),
+		UpdatedBy:   ToSimpleUserResponse(department.UpdatedBy),
+	}
+}
+
+func ToDepartmentsResponse(departments []*model.Department) []*types.DepartmentResponse {
+	if len(departments) == 0 {
+		return make([]*types.DepartmentResponse, 0)
+	}
+
+	departmentsRes := make([]*types.DepartmentResponse, 0, len(departments))
+	for _, department := range departments {
+		departmentsRes = append(departmentsRes, ToDepartmentResponse(department))
+	}
+
+	return departmentsRes
 }

@@ -19,6 +19,17 @@ type UserResponse struct {
 	CreatedAt time.Time `json:"created_at"`
 }
 
+type DepartmentResponse struct {
+	ID          int64               `json:"id"`
+	Name        string              `json:"name"`
+	DisplayName string              `json:"display_name"`
+	Description string              `json:"description"`
+	CreatedAt   time.Time           `json:"created_at"`
+	UpdatedAt   time.Time           `json:"updated_at"`
+	CreatedBy   *SimpleUserResponse `json:"created_by"`
+	UpdatedBy   *SimpleUserResponse `json:"updated_by"`
+}
+
 type SimpleUserResponse struct {
 	ID        int64     `json:"id"`
 	FirstName string    `json:"first_name"`

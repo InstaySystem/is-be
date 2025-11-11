@@ -57,3 +57,18 @@ func (h *DepartmentHandler) CreateDepartment(c *gin.Context) {
 		"id": id,
 	})
 }
+
+func (h *DepartmentHandler) GetDepartments(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	departments, err := h.departmentSvc.GetDepartments(ctx)
+	if err != nil {
+		common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
+		return
+	}
+
+	common.ToAPIResponse(c, http.StatusCreated, "Get department list successfully", gin.H{
+		"departments": common.ToDepartmentsResponse(departments),
+	})
+}
