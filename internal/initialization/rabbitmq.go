@@ -22,12 +22,12 @@ func InitRabbitMQ(cfg *config.Config) (*MQ, error) {
 
 	conn, err := amqp091.Dial(dsn)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("message queue - %w", err)
 	}
 
 	chann, err := conn.Channel()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("message queue - %w", err)
 	}
 
 	return &MQ{

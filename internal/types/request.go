@@ -89,3 +89,8 @@ type UserPaginationQuery struct {
 type DeleteManyRequest struct {
 	IDs []int64 `json:"ids" binding:"required,min=1,dive"`
 }
+
+type CreateServiceTypeRequest struct {
+	Name         string `json:"name" binding:"required,min=2"`
+	DepartmentID int64  `json:"department_id" binding:"required"`
+}

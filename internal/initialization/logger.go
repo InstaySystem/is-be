@@ -1,6 +1,7 @@
 package initialization
 
 import (
+	"fmt"
 	"os"
 
 	"go.uber.org/zap"
@@ -10,7 +11,7 @@ import (
 
 func InitLogger() (*zap.Logger, error) {
 	if err := os.MkdirAll("logs", os.ModePerm); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("zap - %w", err)
 	}
 
 	writeSyncer := zapcore.AddSync(&lumberjack.Logger{

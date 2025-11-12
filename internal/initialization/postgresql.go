@@ -13,6 +13,9 @@ import (
 var allModels = []any{
 	&model.User{},
 	&model.Department{},
+	&model.ServiceType{},
+	&model.Service{},
+	&model.ServiceImage{},
 }
 
 type DB struct {
@@ -31,16 +34,16 @@ func InitPostgreSQL(cfg *config.Config) (*DB, error) {
 	)
 	gDB, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("database - %w", err)
 	}
 
 	if err := runAutoMigrations(gDB); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("database - %w", err)
 	}
 
 	sqlDB, err := gDB.DB()
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("database - %w", err)
 	}
 
 	return &DB{

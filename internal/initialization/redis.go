@@ -7,6 +7,7 @@ import (
 
 	"github.com/InstaySystem/is-be/internal/config"
 	"github.com/redis/go-redis/v9"
+	"github.com/redis/go-redis/v9/maintnotifications"
 )
 
 func InitRedis(cfg *config.Config) (*redis.Client, error) {
@@ -15,10 +16,13 @@ func InitRedis(cfg *config.Config) (*redis.Client, error) {
 		Addr:      rAddr,
 		Password:  cfg.Redis.Password,
 		TLSConfig: &tls.Config{},
+		MaintNotificationsConfig: &maintnotifications.Config{
+			Mode: maintnotifications.ModeDisabled,
+		},
 	})
 
 	if err := rdb.Ping(context.Background()).Err(); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("cache - %w", err)
 	}
 
 	return rdb, nil

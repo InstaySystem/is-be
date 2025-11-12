@@ -9,6 +9,7 @@ import (
 	"github.com/InstaySystem/is-be/internal/types"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/gosimple/slug"
 	"github.com/jackc/pgx/v5/pgconn"
 )
 
@@ -79,4 +80,8 @@ func IsForeignKeyViolation(err error) bool {
 		return pgErr.Code == "23503"
 	}
 	return false
+}
+
+func GenerateSlug(str string) string {
+	return slug.Make(str)
 }

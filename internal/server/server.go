@@ -14,6 +14,7 @@ import (
 	"github.com/InstaySystem/is-be/internal/initialization"
 	"github.com/InstaySystem/is-be/internal/router"
 	"github.com/InstaySystem/is-be/internal/worker"
+	"github.com/emersion/go-imap/client"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
@@ -26,6 +27,7 @@ type Server struct {
 	db     *initialization.DB
 	rdb    *redis.Client
 	mq     *initialization.MQ
+	imap   *client.Client
 	logger *zap.Logger
 }
 
@@ -50,6 +52,11 @@ func NewServer(cfg *config.Config) (*Server, error) {
 		return nil, err
 	}
 
+	imap, err := initialization.InitIMAP(cfg)
+	if err != nil {
+		return nil, err
+	}
+
 	sf, err := initialization.InitSnowFlake()
 	if err != nil {
 		return nil, err
@@ -62,7 +69,7 @@ func NewServer(cfg *config.Config) (*Server, error) {
 
 	ctn := container.NewContainer(cfg, db.Gorm, rdb, s3, sf, logger, mq.Conn, mq.Chan)
 
-	emailWorker := worker.NewEmailWorker(ctn.MQProvider, ctn.SMTPProvider, logger)
+	emailWorker := worker.NewEmailWorker(ctn.MQProvider, ctn.SMTPProvider, imap, logger)
 	go emailWorker.StartSendAuthEmail()
 
 	r := gin.Default()
@@ -88,6 +95,7 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	router.UserRouter(api, ctn.UserCtn.Hdl, ctn.AuthMid)
 	router.AuthRouter(api, ctn.AuthCtn.Hdl, ctn.AuthMid)
 	router.DepartmentRouter(api, ctn.DepartmentCtn.Hdl, ctn.AuthMid)
+	router.ServiceRouter(api, ctn.ServiceCtn.Hdl, ctn.AuthMid)
 
 	addr := fmt.Sprintf(":%d", cfg.Server.Port)
 
@@ -103,6 +111,7 @@ func NewServer(cfg *config.Config) (*Server, error) {
 		db,
 		rdb,
 		mq,
+		imap,
 		logger,
 	}, nil
 }
@@ -122,6 +131,10 @@ func (s *Server) Shutdown(ctx context.Context) {
 
 	if s.mq != nil {
 		s.mq.Close()
+	}
+
+	if s.imap != nil {
+		s.imap.Logout()
 	}
 
 	if s.logger != nil {

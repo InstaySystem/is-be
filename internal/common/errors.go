@@ -38,4 +38,6 @@ var (
 	ErrDepartmentNotFound = errors.New("department not found")
 
 	ErrDepartmentRequired = errors.New("departmentid is require")
+
+	ErrServiceTypeAlreadyExists = errors.New("service type already exists")
 )

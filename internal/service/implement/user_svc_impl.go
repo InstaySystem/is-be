@@ -20,7 +20,6 @@ import (
 
 type userSvcImpl struct {
 	userRepo         repository.UserRepository
-	departmentRepo   repository.DepartmentRepository
 	sfGen            snowflake.Generator
 	logger           *zap.Logger
 	bHash            bcrypt.Hasher
@@ -30,7 +29,6 @@ type userSvcImpl struct {
 
 func NewUserService(
 	userRepo repository.UserRepository,
-	departmentRepo repository.DepartmentRepository,
 	sfGen snowflake.Generator,
 	logger *zap.Logger,
 	bHash bcrypt.Hasher,
@@ -39,7 +37,6 @@ func NewUserService(
 ) service.UserService {
 	return &userSvcImpl{
 		userRepo,
-		departmentRepo,
 		sfGen,
 		logger,
 		bHash,
@@ -49,17 +46,6 @@ func NewUserService(
 }
 
 func (s *userSvcImpl) CreateUser(ctx context.Context, req types.CreateUserRequest) (int64, error) {
-	if req.DepartmentID != nil {
-		exists, err := s.departmentRepo.ExistsByID(ctx, *req.DepartmentID)
-		if err != nil {
-			s.logger.Error("find department by id failed", zap.Int64("id", *req.DepartmentID), zap.Error(err))
-			return 0, err
-		}
-		if !exists {
-			return 0, common.ErrDepartmentNotFound
-		}
-	}
-
 	hashedPass, err := s.bHash.HashPassword(req.Password)
 	if err != nil {
 		s.logger.Error("hash password failed", zap.Error(err))
@@ -95,6 +81,9 @@ func (s *userSvcImpl) CreateUser(ctx context.Context, req types.CreateUserReques
 			case "users_phone_key":
 				return 0, common.ErrPhoneAlreadyExists
 			}
+		}
+		if common.IsForeignKeyViolation(err) {
+			return 0, common.ErrDepartmentNotFound
 		}
 		s.logger.Error("create user failed", zap.Error(err))
 		return 0, err
@@ -177,17 +166,6 @@ func (s *userSvcImpl) UpdateUser(ctx context.Context, id int64, req types.Update
 		updateData["department_id"] = nil
 	}
 
-	if depID, ok := updateData["department_id"].(int64); ok {
-		exists, err := s.departmentRepo.ExistsByID(ctx, depID)
-		if err != nil {
-			s.logger.Error("find department by id failed", zap.Int64("id", depID), zap.Error(err))
-			return nil, err
-		}
-		if !exists {
-			return nil, common.ErrDepartmentNotFound
-		}
-	}
-
 	if req.Username != nil && *req.Username != user.Username {
 		updateData["username"] = req.Username
 	}
@@ -234,6 +212,9 @@ func (s *userSvcImpl) UpdateUser(ctx context.Context, id int64, req types.Update
 				case "users_phone_key":
 					return nil, common.ErrPhoneAlreadyExists
 				}
+			}
+			if common.IsForeignKeyViolation(err) {
+				return nil, common.ErrDepartmentNotFound
 			}
 			s.logger.Error("update user failed", zap.Int64("id", id), zap.Error(err))
 			return nil, err
