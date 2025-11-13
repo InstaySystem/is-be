@@ -17,4 +17,6 @@ type ServiceService interface {
 	DeleteServiceType(ctx context.Context, serviceTypeID int64) error
 
 	CreateService(ctx context.Context, userID int64, req types.CreateServiceRequest) (int64, error)
+
+	GetServicesForAdmin(ctx context.Context, query types.ServicePaginationQuery) ([]*model.Service, *types.MetaResponse, error)
 }

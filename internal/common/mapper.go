@@ -118,6 +118,10 @@ func ToDepartmentsResponse(departments []*model.Department) []*types.DepartmentR
 }
 
 func ToBasicUserResponse(user *model.User) *types.BasicUserResponse {
+	if user == nil {
+		return nil
+	}
+
 	return &types.BasicUserResponse{
 		ID:        user.ID,
 		Username:  user.Username,
@@ -127,6 +131,10 @@ func ToBasicUserResponse(user *model.User) *types.BasicUserResponse {
 }
 
 func ToServiceTypeResponse(serviceType *model.ServiceType) *types.ServiceTypeResponse {
+	if serviceType == nil {
+		return nil
+	}
+
 	return &types.ServiceTypeResponse{
 		ID:         serviceType.ID,
 		Name:       serviceType.Name,
@@ -149,4 +157,61 @@ func ToServiceTypesResponse(serviceTypes []*model.ServiceType) []*types.ServiceT
 	}
 
 	return serviceTypesRes
+}
+
+func ToSimpleServiceTypeResponse(serviceType *model.ServiceType) *types.SimpleServiceTypeResponse {
+	if serviceType == nil {
+		return nil
+	}
+
+	return &types.SimpleServiceTypeResponse{
+		ID:   serviceType.ID,
+		Name: serviceType.Name,
+	}
+}
+
+func ToSimpleServiceImageResponse(serviceImage *model.ServiceImage) *types.SimpleServiceImageResponse {
+	if serviceImage == nil {
+		return nil
+	}
+
+	return &types.SimpleServiceImageResponse{
+		ID: serviceImage.ID,
+		Key: serviceImage.Key,
+	}
+}
+
+func ToSimpleServiceResponse(service *model.Service) *types.SimpleServiceResponse {
+	if service == nil {
+		return nil
+	}
+
+	return &types.SimpleServiceResponse{
+		ID: service.ID,
+		Name: service.Name,
+		Price: service.Price,
+		IsActive: service.IsActive,
+		ServiceType: ToSimpleServiceTypeResponse(service.ServiceType),
+		Thumbnail: ToSimpleServiceImageResponse(service.ServiceImages[0]),
+	}
+}
+
+func ToSimpleServicesResponse(services []*model.Service) []*types.SimpleServiceResponse {
+	if len(services) == 0 {
+		return make([]*types.SimpleServiceResponse, 0)
+	}
+
+	servicesRes := make([]*types.SimpleServiceResponse, 0, len(services))
+	for _, service := range services {
+		servicesRes = append(servicesRes, ToSimpleServiceResponse(service))
+	}
+
+	return servicesRes
+}
+
+func ToServiceListResponse(services []*model.Service, meta *types.MetaResponse) *types.ServiceListResponse {
+	return &types.ServiceListResponse{
+		Services: ToSimpleServicesResponse(services),
+		Meta:  meta,
+	}
 }

@@ -23,6 +23,7 @@ type Service struct {
 	Name          string    `gorm:"type:varchar(150);not null" json:"name"`
 	Slug          string    `gorm:"type:varchar(150);uniqueIndex:services_slug_key"`
 	Price         float64   `gorm:"type:decimal(10,2);not null" json:"price"`
+	IsActive      bool      `gorm:"boolean;not null" json:"is_active"`
 	CreatedAt     time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt     time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 	CreatedByID   int64     `gorm:"type:bigint;not null" json:"created_by_id"`
@@ -40,7 +41,7 @@ type ServiceImage struct {
 	ServiceID   int64     `gorm:"type:bigint;not null" json:"service_id"`
 	Key         string    `gorm:"type:varchar(150);uniqueIndex:service_images_key_key"`
 	IsThumbnail bool      `gorm:"type:boolean;not null" json:"is_thumbnail"`
-	SortOrder   uint      `gorm:"type:int;not null" json:"sort_order"`
+	SortOrder   uint32    `gorm:"type:integer;not null" json:"sort_order"`
 	UploadedAt  time.Time `json:"uploaded_at"`
 
 	Service *Service `gorm:"foreignKey:ServiceID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE,name:fk_service_images_service" json:"service"`

@@ -184,3 +184,23 @@ func (h *ServiceHandler) CreateService(c *gin.Context) {
 		"id": id,
 	})
 }
+
+func (h *ServiceHandler) GetServicesForAdmin(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	var query types.ServicePaginationQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		mess := common.HandleValidationError(err)
+		common.ToAPIResponse(c, http.StatusBadRequest, mess, nil)
+		return
+	}
+
+	services, meta, err := h.serviceSvc.GetServicesForAdmin(ctx, query)
+	if err != nil {
+		common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
+		return
+	}
+
+	common.ToAPIResponse(c, http.StatusOK, "Get service list successfully", common.ToServiceListResponse(services, meta))
+}

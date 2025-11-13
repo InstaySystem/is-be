@@ -97,13 +97,13 @@ func (r *userRepoImpl) FindAllWithDepartmentPaginated(ctx context.Context, query
 	var total int64
 
 	db := r.db.WithContext(ctx).Preload("Department").Model(&model.User{})
-	db = applyFilters(db, query)
+	db = applyUserFilters(db, query)
 
 	if err := db.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
-	db = applySorting(db, query)
+	db = applyUserSorting(db, query)
 	offset := (query.Page - 1) * query.Limit
 	if err := db.Offset(int(offset)).Limit(int(query.Limit)).Find(&users).Error; err != nil {
 		return nil, 0, err
@@ -125,7 +125,7 @@ func (r *userRepoImpl) Delete(ctx context.Context, id int64) error {
 	return nil
 }
 
-func applyFilters(db *gorm.DB, query types.UserPaginationQuery) *gorm.DB {
+func applyUserFilters(db *gorm.DB, query types.UserPaginationQuery) *gorm.DB {
 	if query.Search != "" {
 		searchTerm := "%" + strings.ToLower(query.Search) + "%"
 		db = db.Where(
@@ -142,14 +142,14 @@ func applyFilters(db *gorm.DB, query types.UserPaginationQuery) *gorm.DB {
 		db = db.Where("is_active = ?", *query.IsActive)
 	}
 
-	if query.Department != "" {
-    db = db.Joins("JOIN departments ON users.department_id = departments.id").Where("LOWER(departments.name) = ?", strings.ToLower(query.Department))
+	if query.DepartmentID != 0 {
+		db = db.Where("department_id = ?", query.DepartmentID)
 	}
 
 	return db
 }
 
-func applySorting(db *gorm.DB, query types.UserPaginationQuery) *gorm.DB {
+func applyUserSorting(db *gorm.DB, query types.UserPaginationQuery) *gorm.DB {
 	if query.Sort == "" {
 		query.Sort = "created_at"
 	}

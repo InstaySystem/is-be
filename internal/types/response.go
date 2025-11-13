@@ -59,6 +59,11 @@ type UserListResponse struct {
 	Meta  *MetaResponse         `json:"meta"`
 }
 
+type ServiceListResponse struct {
+	Services []*SimpleServiceResponse `json:"services"`
+	Meta     *MetaResponse            `json:"meta"`
+}
+
 type MetaResponse struct {
 	Total      uint64 `json:"total"`
 	Page       uint32 `json:"page"`
@@ -76,4 +81,23 @@ type ServiceTypeResponse struct {
 	CreatedBy  *BasicUserResponse        `json:"created_by"`
 	UpdatedBy  *BasicUserResponse        `json:"updated_by"`
 	Department *SimpleDepartmentResponse `json:"department"`
+}
+
+type SimpleServiceTypeResponse struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+}
+
+type SimpleServiceImageResponse struct {
+	ID  int64  `json:"id"`
+	Key string `json:"key"`
+}
+
+type SimpleServiceResponse struct {
+	ID          int64                       `json:"id"`
+	Name        string                      `json:"name"`
+	Price       float64                     `json:"price"`
+	IsActive    bool                        `json:"is_active"`
+	ServiceType *SimpleServiceTypeResponse  `json:"service_type"`
+	Thumbnail   *SimpleServiceImageResponse `json:"thumbnail"`
 }

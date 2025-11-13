@@ -106,10 +106,8 @@ func (h *UserHandler) GetUsers(c *gin.Context) {
 
 func (h *UserHandler) GetAllRoles(c *gin.Context) {
 	rolesMap := map[string]string{
-		common.RoleAdminDisplayName:        common.RoleAdmin,
-		common.RoleReceptionistDisplayName: common.RoleReceptionist,
-		common.RoleHousekeeperDisplayName:  common.RoleHousekeeper,
-		common.RoleTechnicianDisplayName:   common.RoleTechnician,
+		common.RoleAdminDisplayName: common.RoleAdmin,
+		common.RoleStaffDisplayName: common.RoleStaff,
 	}
 
 	common.ToAPIResponse(c, http.StatusOK, "Get all roles successfully", gin.H{

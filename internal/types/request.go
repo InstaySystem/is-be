@@ -76,14 +76,14 @@ type ResetPasswordRequest struct {
 }
 
 type UserPaginationQuery struct {
-	Page       uint32 `form:"page" binding:"omitempty,min=1" json:"page"`
-	Limit      uint32 `form:"limit" binding:"omitempty,min=1,max=100" json:"limit"`
-	Sort       string `form:"sort" json:"sort"`
-	Order      string `form:"order" binding:"omitempty,oneof=asc desc" json:"order"`
-	Role       string `form:"role" binding:"omitempty,oneof=admin staff" json:"role"`
-	Department string `form:"department" binding:"omitempty" json:"department"`
-	IsActive   *bool  `form:"is_active" binding:"omitempty" json:"is_active"`
-	Search     string `form:"search" json:"search"`
+	Page         uint32 `form:"page" binding:"omitempty,min=1" json:"page"`
+	Limit        uint32 `form:"limit" binding:"omitempty,min=1,max=100" json:"limit"`
+	Sort         string `form:"sort" json:"sort"`
+	Order        string `form:"order" binding:"omitempty,oneof=asc desc" json:"order"`
+	Role         string `form:"role" binding:"omitempty,oneof=admin staff" json:"role"`
+	DepartmentID int64  `form:"department_id" binding:"omitempty" json:"department_id"`
+	IsActive     *bool  `form:"is_active" binding:"omitempty" json:"is_active"`
+	Search       string `form:"search" json:"search"`
 }
 
 type DeleteManyRequest struct {
@@ -103,6 +103,7 @@ type UpdateServiceTypeRequest struct {
 type CreateServiceRequest struct {
 	Name          string                      `json:"name" binding:"required,min=2"`
 	Price         float64                     `json:"price" binding:"required,gt=0"`
+	IsActive      bool                        `json:"is_active" binding:"required"`
 	ServiceTypeID int64                       `json:"service_type_id" binding:"required"`
 	Images        []CreateServiceImageRequest `json:"images" binding:"required,min=1,dive"`
 }
@@ -110,5 +111,15 @@ type CreateServiceRequest struct {
 type CreateServiceImageRequest struct {
 	Key         string `json:"key" binding:"required,min=2"`
 	IsThumbnail bool   `json:"is_thumbnail" binding:"required"`
-	SortOrder   uint   `json:"sort_order" binding:"required"`
+	SortOrder   uint32 `json:"sort_order" binding:"required"`
+}
+
+type ServicePaginationQuery struct {
+	Page          uint32 `form:"page" binding:"omitempty,min=1" json:"page"`
+	Limit         uint32 `form:"limit" binding:"omitempty,min=1,max=100" json:"limit"`
+	Sort          string `form:"sort" json:"sort"`
+	Order         string `form:"order" binding:"omitempty,oneof=asc desc" json:"order"`
+	ServiceTypeID int64  `form:"service_type_id" binding:"omitempty" json:"service_type_id"`
+	IsActive      *bool  `form:"is_active" binding:"omitempty" json:"is_active"`
+	Search        string `form:"search" json:"search"`
 }

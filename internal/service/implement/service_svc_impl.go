@@ -175,3 +175,34 @@ func (s *serviceSvcImpl) CreateService(ctx context.Context, userID int64, req ty
 
 	return serviceID, nil
 }
+
+func (s *serviceSvcImpl) GetServicesForAdmin(ctx context.Context, query types.ServicePaginationQuery) ([]*model.Service, *types.MetaResponse, error) {
+	if query.Page == 0 {
+		query.Page = 1
+	}
+	if query.Limit == 0 {
+		query.Limit = 10
+	}
+
+	services, total, err := s.serviceRepo.FindAllServicesWithServiceTypeAndThumbnailPaginated(ctx, query)
+	if err != nil {
+		s.logger.Error("find all services paginated failed", zap.Error(err))
+		return nil, nil, err
+	}
+
+	totalPages := uint32(total) / query.Limit
+	if uint32(total)%query.Limit != 0 {
+		totalPages++
+	}
+
+	meta := &types.MetaResponse{
+		Total:      uint64(total),
+		Page:       query.Page,
+		Limit:      query.Limit,
+		TotalPages: uint16(totalPages),
+		HasPrev:    query.Page > 1,
+		HasNext:    query.Page < totalPages,
+	}
+
+	return services, meta, nil
+}
