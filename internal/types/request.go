@@ -99,3 +99,16 @@ type UpdateServiceTypeRequest struct {
 	Name         *string `json:"name" binding:"omitempty,min=2"`
 	DepartmentID *int64  `json:"department_id" binding:"omitempty"`
 }
+
+type CreateServiceRequest struct {
+	Name          string                      `json:"name" binding:"required,min=2"`
+	Price         float64                     `json:"price" binding:"required,gt=0"`
+	ServiceTypeID int64                       `json:"service_type_id" binding:"required"`
+	Images        []CreateServiceImageRequest `json:"images" binding:"required,min=1,dive"`
+}
+
+type CreateServiceImageRequest struct {
+	Key         string `json:"key" binding:"required,min=2"`
+	IsThumbnail bool   `json:"is_thumbnail" binding:"required"`
+	SortOrder   uint   `json:"sort_order" binding:"required"`
+}

@@ -4,7 +4,7 @@ import "errors"
 
 var (
 	ErrUsernameAlreadyExists = errors.New("username already exists")
-	
+
 	ErrEmailAlreadyExists = errors.New("email already exists")
 
 	ErrPhoneAlreadyExists = errors.New("phone number already exists")
@@ -42,4 +42,8 @@ var (
 	ErrServiceTypeAlreadyExists = errors.New("service type already exists")
 
 	ErrServiceTypeNotFound = errors.New("service type not found")
+
+	ErrServiceAlreadyExists = errors.New("service already exists")
+
+	ErrServiceNotFound = errors.New("service not found")
 )

@@ -14,5 +14,9 @@ func ServiceRouter(rg *gin.RouterGroup, hdl *handler.ServiceHandler, authMid *mi
 		admin.GET("/service-types", hdl.GetServiceTypesForAdmin)
 
 		admin.PATCH("/service-types/:id", hdl.UpdateServiceType)
+
+		admin.DELETE("/service-types/:id", hdl.DeleteServiceType)
+
+		admin.POST("/services", hdl.CreateService)
 	}
 }

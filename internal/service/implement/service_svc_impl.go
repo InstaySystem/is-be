@@ -2,6 +2,8 @@ package implement
 
 import (
 	"context"
+	"errors"
+	"time"
 
 	"github.com/InstaySystem/is-be/internal/common"
 	"github.com/InstaySystem/is-be/internal/model"
@@ -33,7 +35,7 @@ func NewServiceService(
 func (s *serviceSvcImpl) CreateServiceType(ctx context.Context, userID int64, req types.CreateServiceTypeRequest) error {
 	id, err := s.sfGen.NextID()
 	if err != nil {
-		s.logger.Error("generate ID failed", zap.Error(err))
+		s.logger.Error("generate service type ID failed", zap.Error(err))
 		return err
 	}
 
@@ -105,4 +107,71 @@ func (s *serviceSvcImpl) UpdateServiceType(ctx context.Context, serviceTypeID, u
 	}
 
 	return nil
+}
+
+func (s *serviceSvcImpl) DeleteServiceType(ctx context.Context, serviceTypeID int64) error {
+	if err := s.serviceRepo.DeleteServiceType(ctx, serviceTypeID); err != nil {
+		if errors.Is(err, common.ErrServiceTypeNotFound) {
+			return err
+		}
+		if common.IsForeignKeyViolation(err) {
+			return common.ErrProtectedRecord
+		}
+		s.logger.Error("delete service type failed", zap.Int64("id", serviceTypeID), zap.Error(err))
+		return err
+	}
+
+	return nil
+}
+
+func (s *serviceSvcImpl) CreateService(ctx context.Context, userID int64, req types.CreateServiceRequest) (int64, error) {
+	serviceID, err := s.sfGen.NextID()
+	if err != nil {
+		s.logger.Error("generate service ID failed", zap.Error(err))
+		return 0, err
+	}
+
+	service := &model.Service{
+		ID:            serviceID,
+		Name:          req.Name,
+		Slug:          common.GenerateSlug(req.Name),
+		Price:         req.Price,
+		CreatedByID:   userID,
+		UpdatedByID:   userID,
+		ServiceTypeID: req.ServiceTypeID,
+	}
+
+	serviceImages := make([]*model.ServiceImage, 0, len(req.Images))
+	for _, reqImg := range req.Images {
+		imageID, err := s.sfGen.NextID()
+		if err != nil {
+			s.logger.Error("generate service image ID failed", zap.Error(err))
+			return 0, err
+		}
+		serviceImage := &model.ServiceImage{
+			ID:          imageID,
+			ServiceID:   serviceID,
+			Key:         reqImg.Key,
+			IsThumbnail: reqImg.IsThumbnail,
+			SortOrder:   reqImg.SortOrder,
+			UploadedAt:  time.Now(),
+		}
+
+		serviceImages = append(serviceImages, serviceImage)
+	}
+
+	service.ServiceImages = serviceImages
+
+	if err = s.serviceRepo.CreateService(ctx, service); err != nil {
+		if ok, _ := common.IsUniqueViolation(err); ok {
+			return 0, common.ErrServiceAlreadyExists
+		}
+		if common.IsForeignKeyViolation(err) {
+			return 0, common.ErrServiceTypeNotFound
+		}
+		s.logger.Error("create service failed", zap.Error(err))
+		return 0, err
+	}
+
+	return serviceID, nil
 }

@@ -36,10 +36,12 @@ type Service struct {
 }
 
 type ServiceImage struct {
-	ID         int64     `gorm:"type:bigint;primaryKey" json:"id"`
-	ServiceID  int64     `gorm:"type:bigint;not null" json:"service_id"`
-	Key        string    `gorm:"type:varchar(150);uniqueIndex:service_images_key_key"`
-	UploadedAt time.Time `json:"uploaded_at"`
+	ID          int64     `gorm:"type:bigint;primaryKey" json:"id"`
+	ServiceID   int64     `gorm:"type:bigint;not null" json:"service_id"`
+	Key         string    `gorm:"type:varchar(150);uniqueIndex:service_images_key_key"`
+	IsThumbnail bool      `gorm:"type:boolean;not null" json:"is_thumbnail"`
+	SortOrder   uint      `gorm:"type:int;not null" json:"sort_order"`
+	UploadedAt  time.Time `json:"uploaded_at"`
 
 	Service *Service `gorm:"foreignKey:ServiceID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:CASCADE,name:fk_service_images_service" json:"service"`
 }

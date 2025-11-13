@@ -34,7 +34,7 @@ func NewDepartmentService(
 func (s *departmentSvcImpl) CreateDepartment(ctx context.Context, userID int64, req types.CreateDepartmentRequest) error {
 	id, err := s.sfGen.NextID()
 	if err != nil {
-		s.logger.Error("generate ID failed", zap.Error(err))
+		s.logger.Error("generate department ID failed", zap.Error(err))
 		return err
 	}
 

@@ -55,3 +55,20 @@ func (r *serviceRepoImpl) UpdateServiceType(ctx context.Context, serviceTypeID i
 
 	return nil
 }
+
+func (r *serviceRepoImpl) DeleteServiceType(ctx context.Context, serviceTypeID int64) error {
+	result := r.db.WithContext(ctx).Where("id = ?", serviceTypeID).Delete(&model.ServiceType{})
+	if result.Error != nil {
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return common.ErrServiceTypeNotFound
+	}
+
+	return nil
+}
+
+func (r *serviceRepoImpl) CreateService(ctx context.Context, service *model.Service) error {
+	return r.db.WithContext(ctx).Create(service).Error
+}

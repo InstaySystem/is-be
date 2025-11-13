@@ -14,4 +14,8 @@ type ServiceRepository interface {
 	FindServiceTypeByID(ctx context.Context, serviceTypeID int64) (*model.ServiceType, error)
 
 	UpdateServiceType(ctx context.Context, serviceTypeID int64, updateData map[string]any) error
+
+	DeleteServiceType(ctx context.Context, serviceTypeID int64) error
+
+	CreateService(ctx context.Context, service *model.Service) error
 }

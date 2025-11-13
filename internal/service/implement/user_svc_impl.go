@@ -54,7 +54,7 @@ func (s *userSvcImpl) CreateUser(ctx context.Context, req types.CreateUserReques
 
 	id, err := s.sfGen.NextID()
 	if err != nil {
-		s.logger.Error("generate ID failed", zap.Error(err))
+		s.logger.Error("generate user ID failed", zap.Error(err))
 		return 0, err
 	}
 

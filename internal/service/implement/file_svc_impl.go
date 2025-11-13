@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/InstaySystem/is-be/internal/common"
 	"github.com/InstaySystem/is-be/internal/config"
 	"github.com/InstaySystem/is-be/internal/service"
 	"github.com/InstaySystem/is-be/internal/types"
@@ -31,7 +32,7 @@ func NewFileService(client *s3.Client, presigner *s3.PresignClient, cfg *config.
 }
 
 func (s *fileSvcImpl) CreateUploadURL(ctx context.Context, req types.PresignedURLRequest) (string, error) {
-	objectKey := fmt.Sprintf("%s/%s-%s", s.cfg.S3.Folder, uuid.New().String(), req.FileName)
+	objectKey := fmt.Sprintf("%s/%s-%s", s.cfg.S3.Folder, uuid.NewString(), common.GenerateSlug(req.FileName))
 
 	presignedRes, err := s.presigner.PresignPutObject(ctx, &s3.PutObjectInput{
 		Bucket:      aws.String(s.cfg.S3.Bucket),

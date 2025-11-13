@@ -13,4 +13,8 @@ type ServiceService interface {
 	GetServiceTypesForAdmin(ctx context.Context) ([]*model.ServiceType, error)
 
 	UpdateServiceType(ctx context.Context, serviceType, userID int64, req types.UpdateServiceTypeRequest) error
+
+	DeleteServiceType(ctx context.Context, serviceTypeID int64) error
+
+	CreateService(ctx context.Context, userID int64, req types.CreateServiceRequest) (int64, error)
 }
