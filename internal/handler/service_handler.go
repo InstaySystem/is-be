@@ -231,3 +231,38 @@ func (h *ServiceHandler) GetServiceByID(c *gin.Context) {
 		"service": common.ToServiceResponse(service),
 	})
 }
+
+func (h *ServiceHandler) UpdateService(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	serviceIDStr := c.Param("id")
+	serviceID, err := strconv.ParseInt(serviceIDStr, 10, 64)
+	if err != nil {
+		common.ToAPIResponse(c, http.StatusBadRequest, common.ErrInvalidID.Error(), nil)
+		return
+	}
+
+	userAny, exists := c.Get("user")
+	if !exists {
+		common.ToAPIResponse(c, http.StatusUnauthorized, common.ErrUnAuth.Error(), nil)
+		return
+	}
+
+	user, ok := userAny.(*types.UserData)
+	if !ok {
+		common.ToAPIResponse(c, http.StatusUnauthorized, common.ErrInvalidUser.Error(), nil)
+		return
+	}
+
+	var req types.UpdateServiceRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		mess := common.HandleValidationError(err)
+		common.ToAPIResponse(c, http.StatusBadRequest, mess, nil)
+		return
+	}
+
+	if err := h.serviceSvc.UpdateService(ctx, serviceID, user.ID, req); err != nil {
+		
+	}
+}

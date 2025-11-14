@@ -7,6 +7,7 @@ import (
 	"github.com/InstaySystem/is-be/internal/common"
 	"github.com/InstaySystem/is-be/internal/model"
 	"github.com/InstaySystem/is-be/internal/repository"
+	"github.com/InstaySystem/is-be/internal/types"
 	"gorm.io/gorm"
 )
 
@@ -67,4 +68,32 @@ func (r *departmentRepoImpl) FindAllWithCreatedByAndUpdatedBy(ctx context.Contex
 	}
 
 	return departments, nil
+}
+
+func (r *departmentRepoImpl) FindAll(ctx context.Context) ([]*model.Department, error) {
+	var departments []*model.Department
+	if err := r.db.WithContext(ctx).Find(&departments).Error; err != nil {
+		return nil, err
+	}
+
+	return departments, nil
+}
+
+func (r *departmentRepoImpl) CountStaffByID(ctx context.Context, ids []int64) (map[int64]int64, error) {
+	var counts []types.StaffCountResult
+	if err := r.db.WithContext(ctx).
+		Model(&model.User{}).
+		Select("department_id, COUNT(*) as staff_count").
+		Where("department_id IN ?", ids).
+		Group("department_id").
+		Scan(&counts).Error; err != nil {
+		return nil, err
+	}
+
+	countMap := make(map[int64]int64, len(counts))
+	for _, c := range counts {
+		countMap[c.DepartmentID] = c.StaffCount
+	}
+
+	return countMap, nil
 }

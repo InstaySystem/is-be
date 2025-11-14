@@ -111,7 +111,23 @@ type CreateServiceRequest struct {
 type CreateServiceImageRequest struct {
 	Key         string `json:"key" binding:"required,min=2"`
 	IsThumbnail bool   `json:"is_thumbnail" binding:"required"`
-	SortOrder   uint32 `json:"sort_order" binding:"required"`
+	SortOrder   uint32 `json:"sort_order" binding:"required,gt=0"`
+}
+
+type UpdateServiceRequest struct {
+	Name          *string                      `json:"name" binding:"omitempty,min=2"`
+	Price         *float64                     `json:"price" binding:"omitempty,gt=0"`
+	IsActive      *bool                        `json:"is_active" binding:"omitempty"`
+	ServiceTypeID *int64                       `json:"service_type_id" binding:"omitempty"`
+	UpdateImages  []*UpdateServiceImageRequest `json:"update_images" binding:"omitempty"`
+	DeleteImages  []int64                      `json:"delete_images" binding:"omitempty"`
+}
+
+type UpdateServiceImageRequest struct {
+	ID          *int64  `json:"id" binding:"omitempty"`
+	Key         *string `json:"key" binding:"omitempty,min=2"`
+	IsThumbnail *bool   `json:"is_thumbnail" binding:"omitempty"`
+	SortOrder   *uint32 `json:"sort_order" binding:"omitempty,gt=0"`
 }
 
 type ServicePaginationQuery struct {

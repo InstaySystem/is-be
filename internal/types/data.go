@@ -37,3 +37,8 @@ type AuthEmailMessage struct {
 	Subject string `json:"subject"`
 	Otp     string `json:"otp"`
 }
+
+type StaffCountResult struct {
+	DepartmentID int64 `gorm:"column:department_id"`
+	StaffCount   int64 `gorm:"column:staff_count"`
+}

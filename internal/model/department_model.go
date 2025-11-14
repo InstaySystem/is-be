@@ -16,4 +16,5 @@ type Department struct {
 	ServiceTypes []*ServiceType `gorm:"foreignKey:DepartmentID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT,name:fk_service_types_department" json:"service_types"`
 	CreatedBy    *User          `gorm:"foreignKey:CreatedByID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT,name:fk_departments_created_by" json:"created_by"`
 	UpdatedBy    *User          `gorm:"foreignKey:UpdatedByID;references:ID;constraint:OnUpdate:CASCADE,OnDelete:RESTRICT,name:fk_departments_updated_by" json:"updated_by"`
+	StaffCount   int64          `gorm:"-" json:"staff_count"`
 }

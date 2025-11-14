@@ -268,16 +268,16 @@ func (s *authSvcImpl) UpdateInfo(ctx context.Context, userID int64, req types.Up
 	updateData := map[string]any{}
 
 	if req.Email != nil && *req.Email != user.Phone {
-		updateData["email"] = req.Email
+		updateData["email"] = *req.Email
 	}
 	if req.Phone != nil && *req.Phone != user.Phone {
-		updateData["phone"] = req.Phone
+		updateData["phone"] = *req.Phone
 	}
 	if req.FirstName != nil && *req.FirstName != user.FirstName {
-		updateData["first_name"] = req.FirstName
+		updateData["first_name"] = *req.FirstName
 	}
 	if req.LastName != nil && *req.LastName != user.LastName {
-		updateData["last_name"] = req.LastName
+		updateData["last_name"] = *req.LastName
 	}
 
 	if len(updateData) > 0 {

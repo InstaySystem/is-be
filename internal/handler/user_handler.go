@@ -133,8 +133,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	updatedUser, err := h.userSvc.UpdateUser(ctx, userID, req)
-	if err != nil {
+	if err := h.userSvc.UpdateUser(ctx, userID, req); err != nil {
 		switch err {
 		case common.ErrEmailAlreadyExists, common.ErrUsernameAlreadyExists, common.ErrPhoneAlreadyExists:
 			common.ToAPIResponse(c, http.StatusConflict, err.Error(), nil)
@@ -148,9 +147,7 @@ func (h *UserHandler) UpdateUser(c *gin.Context) {
 		return
 	}
 
-	common.ToAPIResponse(c, http.StatusOK, "User updated successfully", gin.H{
-		"user": common.ToUserResponse(updatedUser),
-	})
+	common.ToAPIResponse(c, http.StatusOK, "User updated successfully", nil)
 }
 
 func (h *UserHandler) UpdateUserPassword(c *gin.Context) {
@@ -171,8 +168,7 @@ func (h *UserHandler) UpdateUserPassword(c *gin.Context) {
 		return
 	}
 
-	updatedUser, err := h.userSvc.UpdateUserPassword(ctx, userID, req)
-	if err != nil {
+	if err = h.userSvc.UpdateUserPassword(ctx, userID, req); err != nil {
 		switch err {
 		case common.ErrUserNotFound:
 			common.ToAPIResponse(c, http.StatusNotFound, err.Error(), nil)
@@ -182,9 +178,7 @@ func (h *UserHandler) UpdateUserPassword(c *gin.Context) {
 		return
 	}
 
-	common.ToAPIResponse(c, http.StatusOK, "User password updated successfully", gin.H{
-		"user": common.ToUserResponse(updatedUser),
-	})
+	common.ToAPIResponse(c, http.StatusOK, "User password updated successfully", nil)
 }
 
 func (h *UserHandler) DeleteUser(c *gin.Context) {

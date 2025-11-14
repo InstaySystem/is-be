@@ -136,14 +136,14 @@ func (s *userSvcImpl) GetUsers(ctx context.Context, query types.UserPaginationQu
 	return users, meta, nil
 }
 
-func (s *userSvcImpl) UpdateUser(ctx context.Context, id int64, req types.UpdateUserRequest) (*model.User, error) {
+func (s *userSvcImpl) UpdateUser(ctx context.Context, id int64, req types.UpdateUserRequest) error {
 	user, err := s.userRepo.FindByIDWithDepartment(ctx, id)
 	if err != nil {
 		s.logger.Error("find user by id failed", zap.Int64("id", id), zap.Error(err))
-		return nil, err
+		return err
 	}
 	if user == nil {
-		return nil, common.ErrUserNotFound
+		return common.ErrUserNotFound
 	}
 
 	updateData := map[string]any{}
@@ -160,32 +160,32 @@ func (s *userSvcImpl) UpdateUser(ctx context.Context, id int64, req types.Update
 		if req.DepartmentID != nil {
 			updateData["department_id"] = *req.DepartmentID
 		} else if user.DepartmentID == nil {
-			return nil, common.ErrDepartmentRequired
+			return common.ErrDepartmentRequired
 		}
 	case "admin":
 		updateData["department_id"] = nil
 	}
 
 	if req.Username != nil && *req.Username != user.Username {
-		updateData["username"] = req.Username
+		updateData["username"] = *req.Username
 	}
 	if req.Email != nil && *req.Email != user.Phone {
-		updateData["email"] = req.Email
+		updateData["email"] = *req.Email
 	}
 	if req.Phone != nil && *req.Phone != user.Phone {
-		updateData["phone"] = req.Phone
+		updateData["phone"] = *req.Phone
 	}
 	if req.FirstName != nil && *req.FirstName != user.FirstName {
-		updateData["first_name"] = req.FirstName
+		updateData["first_name"] = *req.FirstName
 	}
 	if req.LastName != nil && *req.LastName != user.LastName {
-		updateData["last_name"] = req.LastName
+		updateData["last_name"] = *req.LastName
 	}
 	if req.Role != nil && *req.Role != user.Role {
-		updateData["role"] = req.Role
+		updateData["role"] = *req.Role
 	}
 	if req.IsActive != nil && *req.IsActive != user.IsActive {
-		updateData["is_active"] = req.IsActive
+		updateData["is_active"] = *req.IsActive
 	}
 
 	if req.Role != nil && *req.Role != user.Role || req.IsActive != nil && *req.IsActive != user.IsActive {
@@ -193,10 +193,10 @@ func (s *userSvcImpl) UpdateUser(ctx context.Context, id int64, req types.Update
 			count, err := s.userRepo.CountActiveAdminExceptID(ctx, user.ID)
 			if err != nil {
 				s.logger.Error("count active admin failed", zap.Error(err))
-				return nil, err
+				return err
 			}
 			if count == 0 {
-				return nil, common.ErrNeedAdmin
+				return common.ErrNeedAdmin
 			}
 		}
 	}
@@ -206,45 +206,43 @@ func (s *userSvcImpl) UpdateUser(ctx context.Context, id int64, req types.Update
 			if ok, constraint := common.IsUniqueViolation(err); ok {
 				switch constraint {
 				case "users_username_key":
-					return nil, common.ErrUsernameAlreadyExists
+					return common.ErrUsernameAlreadyExists
 				case "users_email_key":
-					return nil, common.ErrEmailAlreadyExists
+					return common.ErrEmailAlreadyExists
 				case "users_phone_key":
-					return nil, common.ErrPhoneAlreadyExists
+					return common.ErrPhoneAlreadyExists
 				}
 			}
 			if common.IsForeignKeyViolation(err) {
-				return nil, common.ErrDepartmentNotFound
+				return common.ErrDepartmentNotFound
 			}
 			s.logger.Error("update user failed", zap.Int64("id", id), zap.Error(err))
-			return nil, err
+			return err
 		}
-
-		user, _ = s.userRepo.FindByIDWithDepartment(ctx, id)
 	}
 
-	return user, nil
+	return nil
 }
 
-func (s *userSvcImpl) UpdateUserPassword(ctx context.Context, id int64, req types.UpdateUserPasswordRequest) (*model.User, error) {
+func (s *userSvcImpl) UpdateUserPassword(ctx context.Context, id int64, req types.UpdateUserPasswordRequest) error {
 	user, err := s.userRepo.FindByIDWithDepartment(ctx, id)
 	if err != nil {
 		s.logger.Error("find user by id failed", zap.Int64("id", id), zap.Error(err))
-		return nil, err
+		return err
 	}
 	if user == nil {
-		return nil, common.ErrUserNotFound
+		return common.ErrUserNotFound
 	}
 
 	hashedPass, err := s.bHash.HashPassword(req.NewPassword)
 	if err != nil {
 		s.logger.Error("hash password failed", zap.Error(err))
-		return nil, err
+		return err
 	}
 
 	if err = s.userRepo.Update(ctx, id, map[string]any{"password": hashedPass}); err != nil {
 		s.logger.Error("update user failed", zap.Int64("id", id), zap.Error(err))
-		return nil, err
+		return err
 	}
 
 	if user.Role != common.RoleAdmin {
@@ -253,11 +251,11 @@ func (s *userSvcImpl) UpdateUserPassword(ctx context.Context, id int64, req type
 		redisKey := fmt.Sprintf("user-revoked-before:%d", id)
 		if err = s.cacheProvider.SetString(ctx, redisKey, currentTimeStr, s.refreshExpiresIn); err != nil {
 			s.logger.Error("set revocation key after password reset failed", zap.Error(err))
-			return nil, err
+			return err
 		}
 	}
 
-	return user, nil
+	return nil
 }
 
 func (s *userSvcImpl) DeleteUser(ctx context.Context, id int64) error {

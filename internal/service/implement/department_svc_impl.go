@@ -66,6 +66,35 @@ func (s *departmentSvcImpl) GetDepartments(ctx context.Context) ([]*model.Depart
 		return nil, err
 	}
 
+	if len(departments) == 0 {
+		return departments, nil
+	}
+
+	departmentIDs := make([]int64, len(departments))
+	for i, dept := range departments {
+		departmentIDs[i] = dept.ID
+	}
+
+	staffCounts, err := s.departmentRepo.CountStaffByID(ctx, departmentIDs)
+	if err != nil {
+		s.logger.Error("count staff by department ID failed", zap.Error(err))
+		return nil, err
+	}
+
+	for _, dept := range departments {
+		dept.StaffCount = staffCounts[dept.ID]
+	}
+
+	return departments, nil
+}
+
+func (s *departmentSvcImpl) GetSimpleDepartments(ctx context.Context) ([]*model.Department, error) {
+	departments, err := s.departmentRepo.FindAll(ctx)
+	if err != nil {
+		s.logger.Error("get departments failed", zap.Error(err))
+		return nil, err
+	}
+
 	return departments, nil
 }
 
@@ -82,13 +111,13 @@ func (s *departmentSvcImpl) UpdateDepartment(ctx context.Context, id, userID int
 	updateData := map[string]any{}
 
 	if req.Name != nil && department.Name != *req.Name {
-		updateData["name"] = req.Name
+		updateData["name"] = *req.Name
 	}
 	if req.DisplayName != nil && department.DisplayName != *req.DisplayName {
-		updateData["display_name"] = req.DisplayName
+		updateData["display_name"] = *req.DisplayName
 	}
 	if req.Description != nil && department.Description != *req.Description {
-		updateData["description"] = req.Description
+		updateData["description"] = *req.Description
 	}
 
 	if len(updateData) > 0 {

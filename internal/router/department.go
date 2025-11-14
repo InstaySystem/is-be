@@ -7,14 +7,16 @@ import (
 )
 
 func DepartmentRouter(rg *gin.RouterGroup, hdl *handler.DepartmentHandler, authMid *middleware.AuthMiddleware) {
-	department := rg.Group("/departments", authMid.IsAuthentication(), authMid.HasAnyRole([]string{"admin"}))
+	admin := rg.Group("/admin", authMid.IsAuthentication(), authMid.HasAnyRole([]string{"admin"}))
 	{
-		department.POST("", hdl.CreateDepartment)
+		admin.POST("/departments", hdl.CreateDepartment)
 
-		department.GET("", hdl.GetDepartments)
+		admin.GET("/departments", hdl.GetDepartments)
 
-		department.PATCH("/:id", hdl.UpdateDepartment)
+		admin.PATCH("/departments/:id", hdl.UpdateDepartment)
 
-		department.DELETE("/:id", hdl.DeleteDepartment)
+		admin.DELETE("/departments/:id", hdl.DeleteDepartment)
 	}
+
+	rg.GET("/departments", hdl.GetSimpleDepartments)
 }

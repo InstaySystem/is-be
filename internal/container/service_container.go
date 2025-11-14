@@ -19,7 +19,7 @@ func NewServiceContainer(
 	logger *zap.Logger,
 ) *ServiceContainer {
 	repo := repoImpl.NewServiceRepository(db)
-	svc := svcImpl.NewServiceService(repo, sfGen, logger)
+	svc := svcImpl.NewServiceService(repo, db, sfGen, logger)
 	hdl := handler.NewServiceHandler(svc)
 
 	return &ServiceContainer{hdl}

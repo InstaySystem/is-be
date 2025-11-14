@@ -16,4 +16,8 @@ type DepartmentRepository interface {
 	FindByID(ctx context.Context, id int64) (*model.Department, error)
 
 	FindAllWithCreatedByAndUpdatedBy(ctx context.Context) ([]*model.Department, error)
+
+	FindAll(ctx context.Context) ([]*model.Department, error)
+
+	CountStaffByID(ctx context.Context, ids []int64) (map[int64]int64, error)
 }

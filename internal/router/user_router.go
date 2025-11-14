@@ -7,7 +7,7 @@ import (
 )
 
 func UserRouter(rg *gin.RouterGroup, hdl *handler.UserHandler, authMid *middleware.AuthMiddleware) {
-	user := rg.Group("/users", authMid.IsAuthentication(), authMid.HasAnyRole([]string{"admin"}))
+	user := rg.Group("/admin/users", authMid.IsAuthentication(), authMid.HasAnyRole([]string{"admin"}))
 	{
 		user.POST("", hdl.CreateUser)
 

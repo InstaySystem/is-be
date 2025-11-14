@@ -22,5 +22,7 @@ func ServiceRouter(rg *gin.RouterGroup, hdl *handler.ServiceHandler, authMid *mi
 		admin.GET("/services", hdl.GetServicesForAdmin)
 
 		admin.GET("/services/:id", hdl.GetServiceByID)
+
+		admin.PATCH("/services/:id", hdl.UpdateService)
 	}
 }

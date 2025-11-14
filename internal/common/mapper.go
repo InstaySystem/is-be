@@ -101,6 +101,7 @@ func ToDepartmentResponse(department *model.Department) *types.DepartmentRespons
 		UpdatedAt:   department.UpdatedAt,
 		CreatedBy:   ToBasicUserResponse(department.CreatedBy),
 		UpdatedBy:   ToBasicUserResponse(department.UpdatedBy),
+		StaffCount:  department.StaffCount,
 	}
 }
 
@@ -144,6 +145,19 @@ func ToServiceTypeResponse(serviceType *model.ServiceType) *types.ServiceTypeRes
 		UpdatedBy:  ToBasicUserResponse(serviceType.UpdatedBy),
 		Department: ToSimpleDepartmentResponse(serviceType.Department),
 	}
+}
+
+func ToSimpleDepartmentsResponse(departments []*model.Department) []*types.SimpleDepartmentResponse {
+	if len(departments) == 0 {
+		return make([]*types.SimpleDepartmentResponse, 0)
+	}
+
+	departmentsRes := make([]*types.SimpleDepartmentResponse, 0, len(departments))
+	for _, department := range departments {
+		departmentsRes = append(departmentsRes, ToSimpleDepartmentResponse(department))
+	}
+
+	return departmentsRes
 }
 
 func ToServiceTypesResponse(serviceTypes []*model.ServiceType) []*types.ServiceTypeResponse {

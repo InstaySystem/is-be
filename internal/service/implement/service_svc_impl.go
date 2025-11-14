@@ -12,21 +12,25 @@ import (
 	"github.com/InstaySystem/is-be/internal/types"
 	"github.com/InstaySystem/is-be/pkg/snowflake"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type serviceSvcImpl struct {
 	serviceRepo repository.ServiceRepository
+	db          *gorm.DB
 	sfGen       snowflake.Generator
 	logger      *zap.Logger
 }
 
 func NewServiceService(
 	serviceRepo repository.ServiceRepository,
+	db *gorm.DB,
 	sfGen snowflake.Generator,
 	logger *zap.Logger,
 ) service.ServiceService {
 	return &serviceSvcImpl{
 		serviceRepo,
+		db,
 		sfGen,
 		logger,
 	}
@@ -85,11 +89,11 @@ func (s *serviceSvcImpl) UpdateServiceType(ctx context.Context, serviceTypeID, u
 	updateData := map[string]any{}
 
 	if req.Name != nil && serviceType.Name != *req.Name {
-		updateData["name"] = req.Name
+		updateData["name"] = *req.Name
 		updateData["slug"] = common.GenerateSlug(*req.Name)
 	}
 	if req.DepartmentID != nil && serviceType.DepartmentID != *req.DepartmentID {
-		updateData["department_id"] = req.DepartmentID
+		updateData["department_id"] = *req.DepartmentID
 	}
 
 	if len(updateData) > 0 {
@@ -218,4 +222,33 @@ func (s *serviceSvcImpl) GetServiceByID(ctx context.Context, serviceID int64) (*
 	}
 
 	return service, nil
+}
+
+func (s *serviceSvcImpl) UpdateService(ctx context.Context, serviceID, userID int64, req types.UpdateServiceRequest) error {
+	service, err := s.serviceRepo.FindServiceByIDWithDetails(ctx, serviceID)
+	if err != nil {
+		s.logger.Error("find service by id failed", zap.Int64("id", serviceID), zap.Error(err))
+		return err
+	}
+	if service == nil {
+		return common.ErrServiceNotFound
+	}
+
+	updateData := map[string]any{}
+
+	if req.Name != nil && *req.Name != service.Name {
+		updateData["name"] = *req.Name
+		updateData["slug"] = common.GenerateSlug(*req.Name)
+	}
+	if req.Price != nil && *req.Price != service.Price {
+		updateData["price"] = *req.Price
+	}
+	if req.IsActive != nil && *req.IsActive != service.IsActive {
+		updateData["is_active"] = *req.IsActive
+	}
+	if req.ServiceTypeID != nil && *req.ServiceTypeID != service.ServiceTypeID {
+		updateData["service_type_id"] = *req.ServiceTypeID
+	}
+
+	return nil
 }

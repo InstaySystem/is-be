@@ -15,4 +15,6 @@ type DepartmentService interface {
 	UpdateDepartment(ctx context.Context, id, userID int64, req types.UpdateDepartmentRequest) error
 
 	DeleteDepartment(ctx context.Context, id int64) error
+
+	GetSimpleDepartments(ctx context.Context) ([]*model.Department, error)
 }

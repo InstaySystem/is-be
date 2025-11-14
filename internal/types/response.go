@@ -29,6 +29,7 @@ type DepartmentResponse struct {
 	UpdatedAt   time.Time          `json:"updated_at"`
 	CreatedBy   *BasicUserResponse `json:"created_by"`
 	UpdatedBy   *BasicUserResponse `json:"updated_by"`
+	StaffCount  int64              `json:"staff_count"`
 }
 
 type SimpleUserResponse struct {
