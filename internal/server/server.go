@@ -97,6 +97,7 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	router.AuthRouter(api, ctn.AuthCtn.Hdl, ctn.AuthMid)
 	router.DepartmentRouter(api, ctn.DepartmentCtn.Hdl, ctn.AuthMid)
 	router.ServiceRouter(api, ctn.ServiceCtn.Hdl, ctn.AuthMid)
+	router.RequestRouter(api, ctn.RequestCtn.Hdl, ctn.AuthMid)
 
 	addr := fmt.Sprintf(":%d", cfg.Server.Port)
 

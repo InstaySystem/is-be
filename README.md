@@ -24,14 +24,21 @@ make run
 │   │   └── 🐹 main_config.go
 │   ├── 📁 container
 │   │   ├── 🐹 auth_container.go
+│   │   ├── 🐹 department_container.go
 │   │   ├── 🐹 file_container.go
 │   │   ├── 🐹 main_container.go
+│   │   ├── 🐹 request_container.go
+│   │   ├── 🐹 service_container.go
 │   │   └── 🐹 user_container.go
 │   ├── 📁 handler
 │   │   ├── 🐹 auth_handler.go
+│   │   ├── 🐹 department_handler.go
 │   │   ├── 🐹 file_handler.go
+│   │   ├── 🐹 request_handler.go
+│   │   ├── 🐹 service_handler.go
 │   │   └── 🐹 user_handler.go
 │   ├── 📁 initialization
+│   │   ├── 🐹 imap.go
 │   │   ├── 🐹 logger.go
 │   │   ├── 🐹 postgresql.go
 │   │   ├── 🐹 rabbitmq.go
@@ -39,10 +46,17 @@ make run
 │   │   ├── 🐹 s3.go
 │   │   └── 🐹 snowflake.go
 │   ├── 📁 middleware
-│   │   └── 🐹 authentication.go
+│   │   ├── 🐹 authentication.go
+│   │   └── 🐹 request.go
 │   ├── 📁 model
+│   │   ├── 🐹 department_model.go
+│   │   ├── 🐹 request_model.go
+│   │   ├── 🐹 room_model.go
+│   │   ├── 🐹 service_model.go
 │   │   └── 🐹 user_model.go
 │   ├── 📁 provider
+│   │   ├── 📁 imap
+│   │   │   └── 🐹 imap.go
 │   │   ├── 📁 jwt
 │   │   │   └── 🐹 jwt.go
 │   │   ├── 📁 mq
@@ -53,28 +67,43 @@ make run
 │   │       └── 🐹 smtp.go
 │   ├── 📁 repository
 │   │   ├── 📁 implement
+│   │   │   ├── 🐹 department_repo_impl.go
+│   │   │   ├── 🐹 request_repo_impl.go
+│   │   │   ├── 🐹 service_repo_impl.go
 │   │   │   └── 🐹 user_repo_impl.go
+│   │   ├── 🐹 department_repository.go
+│   │   ├── 🐹 request_repository.go
+│   │   ├── 🐹 service_repository.go
 │   │   └── 🐹 user_repository.go
 │   ├── 📁 router
 │   │   ├── 🐹 auth_router.go
+│   │   ├── 🐹 department.go
 │   │   ├── 🐹 file_router.go
+│   │   ├── 🐹 request_router.go
+│   │   ├── 🐹 service_router.go
 │   │   └── 🐹 user_router.go
 │   ├── 📁 server
 │   │   └── 🐹 server.go
 │   ├── 📁 service
 │   │   ├── 📁 implement
 │   │   │   ├── 🐹 auth_svc_impl.go
+│   │   │   ├── 🐹 department_svc_impl.go
 │   │   │   ├── 🐹 file_svc_impl.go
+│   │   │   ├── 🐹 request_svc_impl.go
+│   │   │   ├── 🐹 service_svc_impl.go
 │   │   │   └── 🐹 user_svc_impl.go
 │   │   ├── 🐹 auth_service.go
+│   │   ├── 🐹 department_service.go
 │   │   ├── 🐹 file_service.go
+│   │   ├── 🐹 request_service.go
+│   │   ├── 🐹 service_service.go
 │   │   └── 🐹 user_service.go
 │   ├── 📁 types
 │   │   ├── 🐹 data.go
 │   │   ├── 🐹 request.go
 │   │   └── 🐹 response.go
 │   └── 📁 worker
-│       └── 🐹 email_worker.go
+│       └── 🐹 mq_worker.go
 ├── 📁 logs
 │   └── 📄 app.log
 ├── 📁 pkg

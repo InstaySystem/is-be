@@ -137,13 +137,13 @@ func ToServiceTypeResponse(serviceType *model.ServiceType) *types.ServiceTypeRes
 	}
 
 	return &types.ServiceTypeResponse{
-		ID:         serviceType.ID,
-		Name:       serviceType.Name,
-		CreatedAt:  serviceType.CreatedAt,
-		UpdatedAt:  serviceType.UpdatedAt,
-		CreatedBy:  ToBasicUserResponse(serviceType.CreatedBy),
-		UpdatedBy:  ToBasicUserResponse(serviceType.UpdatedBy),
-		Department: ToSimpleDepartmentResponse(serviceType.Department),
+		ID:           serviceType.ID,
+		Name:         serviceType.Name,
+		CreatedAt:    serviceType.CreatedAt,
+		UpdatedAt:    serviceType.UpdatedAt,
+		CreatedBy:    ToBasicUserResponse(serviceType.CreatedBy),
+		UpdatedBy:    ToBasicUserResponse(serviceType.UpdatedBy),
+		Department:   ToSimpleDepartmentResponse(serviceType.Department),
 		ServiceCount: serviceType.ServiceCount,
 	}
 }
@@ -287,4 +287,33 @@ func ToSimpleServiceTypesResponse(serviceTypes []*model.ServiceType) []*types.Si
 	}
 
 	return serviceTypesRes
+}
+
+func ToRequestTypeResponse(requestType *model.RequestType) *types.RequestTypeResponse {
+	if requestType == nil {
+		return nil
+	}
+
+	return &types.RequestTypeResponse{
+		ID:         requestType.ID,
+		Name:       requestType.Name,
+		CreatedAt:  requestType.CreatedAt,
+		UpdatedAt:  requestType.UpdatedAt,
+		CreatedBy:  ToBasicUserResponse(requestType.CreatedBy),
+		UpdatedBy:  ToBasicUserResponse(requestType.UpdatedBy),
+		Department: ToSimpleDepartmentResponse(requestType.Department),
+	}
+}
+
+func ToRequestTypesResponse(requestTypes []*model.RequestType) []*types.RequestTypeResponse {
+	if len(requestTypes) == 0 {
+		return make([]*types.RequestTypeResponse, 0)
+	}
+
+	requestTypesRes := make([]*types.RequestTypeResponse, 0, len(requestTypes))
+	for _, requestType := range requestTypes {
+		requestTypesRes = append(requestTypesRes, ToRequestTypeResponse(requestType))
+	}
+
+	return requestTypesRes
 }

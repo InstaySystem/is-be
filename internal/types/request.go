@@ -140,3 +140,13 @@ type ServicePaginationQuery struct {
 	IsActive      *bool  `form:"is_active" binding:"omitempty" json:"is_active"`
 	Search        string `form:"search" json:"search"`
 }
+
+type CreateRequestTypeRequest struct {
+	Name         string `json:"name" binding:"required,min=2"`
+	DepartmentID int64  `json:"department_id" binding:"required"`
+}
+
+type UpdateRequestTypeRequest struct {
+	Name         *string `json:"name" binding:"omitempty,min=2"`
+	DepartmentID *int64  `json:"department_id" binding:"omitempty"`
+}
