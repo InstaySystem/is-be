@@ -23,6 +23,8 @@ type User struct {
 	ServiceTypesUpdated []*ServiceType `gorm:"foreignKey:UpdatedByID;references:ID;constraint:fk_service_types_updated_by,OnUpdate:CASCADE,OnDelete:RESTRICT" json:"service_types_updated"`
 	RequestTypesCreated []*RequestType `gorm:"foreignKey:CreatedByID;references:ID;constraint:fk_request_types_created_by,OnUpdate:CASCADE,OnDelete:RESTRICT" json:"request_types_created"`
 	RequestTypesUpdated []*RequestType `gorm:"foreignKey:UpdatedByID;references:ID;constraint:fk_request_types_updated_by,OnUpdate:CASCADE,OnDelete:RESTRICT" json:"request_types_updated"`
+	RoomTypesCreated    []*RoomType    `gorm:"foreignKey:CreatedByID;references:ID;constraint:fk_room_types_created_by,OnUpdate:CASCADE,OnDelete:RESTRICT" json:"room_types_created"`
+	RoomTypesUpdated    []*RoomType    `gorm:"foreignKey:UpdatedByID;references:ID;constraint:fk_room_types_updated_by,OnUpdate:CASCADE,OnDelete:RESTRICT" json:"room_types_updated"`
 	ServicesCreated     []*Service     `gorm:"foreignKey:CreatedByID;references:ID;constraint:fk_services_created_by,OnUpdate:CASCADE,OnDelete:RESTRICT" json:"services_created"`
 	ServicesUpdated     []*Service     `gorm:"foreignKey:UpdatedByID;references:ID;constraint:fk_services_updated_by,OnUpdate:CASCADE,OnDelete:RESTRICT" json:"services_updated"`
 }
