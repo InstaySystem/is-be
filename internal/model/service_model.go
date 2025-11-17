@@ -24,7 +24,8 @@ type Service struct {
 	Name          string    `gorm:"type:varchar(150);not null" json:"name"`
 	Slug          string    `gorm:"type:varchar(150);uniqueIndex:services_slug_key"`
 	Price         float64   `gorm:"type:decimal(10,2);not null" json:"price"`
-	IsActive      bool      `gorm:"boolean;not null" json:"is_active"`
+	IsActive      bool      `gorm:"type:boolean;not null" json:"is_active"`
+	Description   string    `gorm:"type:text;not null" json:"description"`
 	CreatedAt     time.Time `gorm:"autoCreateTime" json:"created_at"`
 	UpdatedAt     time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 	CreatedByID   int64     `gorm:"type:bigint;not null" json:"created_by_id"`

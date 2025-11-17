@@ -112,13 +112,14 @@ type CreateServiceRequest struct {
 	Name          string                      `json:"name" binding:"required,min=2"`
 	Price         float64                     `json:"price" binding:"required,gt=0"`
 	IsActive      bool                        `json:"is_active" binding:"required"`
+	Description   string                      `json:"description" binding:"required"`
 	ServiceTypeID int64                       `json:"service_type_id" binding:"required"`
 	Images        []CreateServiceImageRequest `json:"images" binding:"required,min=1,dive"`
 }
 
 type CreateServiceImageRequest struct {
 	Key         string `json:"key" binding:"required,min=2"`
-	IsThumbnail bool   `json:"is_thumbnail" binding:"required"`
+	IsThumbnail *bool  `json:"is_thumbnail" binding:"required"`
 	SortOrder   uint32 `json:"sort_order" binding:"required,gt=0"`
 }
 
@@ -126,6 +127,7 @@ type UpdateServiceRequest struct {
 	Name          *string                     `json:"name" binding:"omitempty,min=2"`
 	Price         *float64                    `json:"price" binding:"omitempty,gt=0"`
 	IsActive      *bool                       `json:"is_active" binding:"omitempty"`
+	Description   *string                      `json:"description" binding:"omitempty"`
 	ServiceTypeID *int64                      `json:"service_type_id" binding:"omitempty"`
 	NewImages     []CreateServiceImageRequest `json:"new_images" binding:"omitempty,dive"`
 	UpdateImages  []UpdateServiceImageRequest `json:"update_images" binding:"omitempty,dive"`
@@ -160,5 +162,5 @@ type UpdateRequestTypeRequest struct {
 }
 
 type CreateRoomTypeRequest struct {
-	Name         string `json:"name" binding:"required,min=2"`
+	Name string `json:"name" binding:"required,min=2"`
 }

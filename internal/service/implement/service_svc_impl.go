@@ -173,6 +173,7 @@ func (s *serviceSvcImpl) CreateService(ctx context.Context, userID int64, req ty
 		Name:          req.Name,
 		Slug:          common.GenerateSlug(req.Name),
 		Price:         req.Price,
+		Description:   req.Description,
 		CreatedByID:   userID,
 		UpdatedByID:   userID,
 		ServiceTypeID: req.ServiceTypeID,
@@ -189,7 +190,7 @@ func (s *serviceSvcImpl) CreateService(ctx context.Context, userID int64, req ty
 			ID:          imageID,
 			ServiceID:   serviceID,
 			Key:         reqImg.Key,
-			IsThumbnail: reqImg.IsThumbnail,
+			IsThumbnail: *reqImg.IsThumbnail,
 			SortOrder:   reqImg.SortOrder,
 		}
 
@@ -278,6 +279,9 @@ func (s *serviceSvcImpl) UpdateService(ctx context.Context, serviceID, userID in
 		}
 		if req.IsActive != nil && *req.IsActive != service.IsActive {
 			updateData["is_active"] = *req.IsActive
+		}
+		if req.Description != nil && *req.Description != service.Description {
+			updateData["description"] = *req.Description
 		}
 		if req.ServiceTypeID != nil && *req.ServiceTypeID != service.ServiceTypeID {
 			updateData["service_type_id"] = *req.ServiceTypeID
@@ -378,7 +382,7 @@ func (s *serviceSvcImpl) UpdateService(ctx context.Context, serviceID, userID in
 					ID:          imageID,
 					ServiceID:   serviceID,
 					Key:         reqImg.Key,
-					IsThumbnail: reqImg.IsThumbnail,
+					IsThumbnail: *reqImg.IsThumbnail,
 					SortOrder:   reqImg.SortOrder,
 				}
 
