@@ -143,3 +143,12 @@ type RequestTypeResponse struct {
 	UpdatedBy  *BasicUserResponse        `json:"updated_by"`
 	Department *SimpleDepartmentResponse `json:"department"`
 }
+
+type RoomTypeResponse struct {
+	ID         int64                     `json:"id"`
+	Name       string                    `json:"name"`
+	CreatedAt  time.Time                 `json:"created_at"`
+	UpdatedAt  time.Time                 `json:"updated_at"`
+	CreatedBy  *BasicUserResponse        `json:"created_by"`
+	UpdatedBy  *BasicUserResponse        `json:"updated_by"`
+}

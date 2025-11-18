@@ -55,3 +55,13 @@ func (s *roomSvcImpl) CreateRoomType(ctx context.Context, userID int64, req type
 
 	return nil
 }
+
+func (s *roomSvcImpl) GetRoomTypesForAdmin(ctx context.Context) ([]*model.RoomType, error) {
+	roomTypes, err := s.roomRepo.FindAllRoomTypesWithDetails(ctx)
+	if err != nil {
+		s.logger.Error("get room types for admin failed", zap.Error(err))
+		return nil, err
+	}
+
+	return roomTypes, nil
+}

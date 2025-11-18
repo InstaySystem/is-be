@@ -19,3 +19,12 @@ func NewRoomRepository(db *gorm.DB) repository.RoomRepository {
 func (r *roomRepoImpl) CreateRoomType(ctx context.Context, roomType *model.RoomType) error {
 	return r.db.WithContext(ctx).Create(roomType).Error
 }
+
+func (r *roomRepoImpl) FindAllRoomTypesWithDetails(ctx context.Context) ([]*model.RoomType, error) {
+	var roomTypes []*model.RoomType
+	if err := r.db.WithContext(ctx).Preload("CreatedBy").Preload("UpdatedBy").Find(&roomTypes).Error; err != nil {
+		return nil, err
+	}
+
+	return roomTypes, nil
+}

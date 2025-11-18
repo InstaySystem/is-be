@@ -43,6 +43,29 @@ func (h *RoomHandler) CreateRoomType(c *gin.Context) {
 	}
 
 	if err := h.roomSvc.CreateRoomType(ctx, user.ID, req); err != nil {
-		
+		switch err {
+		case common.ErrRoomTypeAlreadyExists:
+			common.ToAPIResponse(c, http.StatusConflict, common.ErrUnAuth.Error(), nil)
+		default:
+			common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
+		}
+		return
 	}
+
+	common.ToAPIResponse(c, http.StatusCreated, "Room type created successfully", nil)
+}
+
+func (h *RoomHandler) GetRoomTypesForAdmin(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	roomTypes, err := h.roomSvc.GetRoomTypesForAdmin(ctx)
+	if err != nil {
+		common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
+		return
+	}
+
+	common.ToAPIResponse(c, http.StatusOK, "Get room types successfully", gin.H{
+		"room_types": common.ToRoomTypesResponse(roomTypes),
+	})
 }

@@ -19,6 +19,17 @@ func NewFileHandler(fileSvc service.FileService) *FileHandler {
 	return &FileHandler{fileSvc}
 }
 
+// UploadPresignedURLs godoc
+// @Summary      Get Upload Presigned URLs
+// @Description  Tạo một hoặc nhiều URL (presigned) để client upload file lên storage
+// @Tags         Files
+// @Accept       json
+// @Produce      json
+// @Param        payload                       body      types.UploadPresignedURLsRequest  true  "Danh sách file cần tạo URL (tên file, content type)"
+// @Success      200                           {object}  types.APIResponse{data=object{presigned_urls=[]types.UploadPresignedURLResponse}}  "Tạo URL upload thành công"
+// @Failure      400                           {object}  types.APIResponse  "Bad Request (validation error)"
+// @Failure      500                           {object}  types.APIResponse  "Internal Server Error"
+// @Router       /files/presigned-urls/uploads [post]
 func (h *FileHandler) UploadPresignedURLs(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
@@ -41,6 +52,17 @@ func (h *FileHandler) UploadPresignedURLs(c *gin.Context) {
 	})
 }
 
+// ViewPresignedURLs godoc
+// @Summary      Get View Presigned URLs
+// @Description  Tạo một hoặc nhiều URL (presigned) để client xem/tải file từ storage
+// @Tags         Files
+// @Accept       json
+// @Produce      json
+// @Param        payload                     body      types.ViewPresignedURLsRequest  true  "Danh sách file key cần xem"
+// @Success      200                         {object}  types.APIResponse{data=object{presigned_url=[]types.ViewPresignedURLResponse}}  "Tạo URL xem thành công"
+// @Failure      400                         {object}  types.APIResponse  "Bad Request (validation error)"
+// @Failure      500                         {object}  types.APIResponse  "Internal Server Error"
+// @Router       /files/presigned-urls/views [post]
 func (h *FileHandler) ViewPresignedURLs(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()

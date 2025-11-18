@@ -10,5 +10,7 @@ func RoomRouter(rg *gin.RouterGroup, hdl *handler.RoomHandler, authMid *middlewa
 	admin := rg.Group("/admin", authMid.IsAuthentication(), authMid.HasAnyRole([]string{"admin"}))
 	{
 		admin.POST("/room-types", hdl.CreateRoomType)
+
+		admin.GET("/room-types", hdl.GetRoomTypesForAdmin)
 	}
 }

@@ -8,4 +8,6 @@ import (
 
 type RoomRepository interface {
 	CreateRoomType(ctx context.Context, roomType *model.RoomType) error
+
+	FindAllRoomTypesWithDetails(ctx context.Context) ([]*model.RoomType, error)
 }

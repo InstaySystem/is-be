@@ -14,19 +14,22 @@ import (
 	"github.com/InstaySystem/is-be/internal/initialization"
 	"github.com/InstaySystem/is-be/internal/router"
 	"github.com/InstaySystem/is-be/internal/worker"
+
 	// "github.com/emersion/go-imap/client"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/redis/go-redis/v9"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 	"go.uber.org/zap"
 )
 
 type Server struct {
-	cfg    *config.Config
-	http   *http.Server
-	db     *initialization.DB
-	rdb    *redis.Client
-	mq     *initialization.MQ
+	cfg  *config.Config
+	http *http.Server
+	db   *initialization.DB
+	rdb  *redis.Client
+	mq   *initialization.MQ
 	// imap   *client.Client
 	logger *zap.Logger
 }
@@ -98,6 +101,9 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	router.DepartmentRouter(api, ctn.DepartmentCtn.Hdl, ctn.AuthMid)
 	router.ServiceRouter(api, ctn.ServiceCtn.Hdl, ctn.AuthMid)
 	router.RequestRouter(api, ctn.RequestCtn.Hdl, ctn.AuthMid)
+	router.RoomRouter(api, ctn.RoomCtn.Hdl, ctn.AuthMid)
+
+	api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	addr := fmt.Sprintf(":%d", cfg.Server.Port)
 

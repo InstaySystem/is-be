@@ -317,3 +317,31 @@ func ToRequestTypesResponse(requestTypes []*model.RequestType) []*types.RequestT
 
 	return requestTypesRes
 }
+
+func ToRoomTypeResponse(roomType *model.RoomType) *types.RoomTypeResponse {
+	if roomType == nil {
+		return nil
+	}
+
+	return &types.RoomTypeResponse{
+		ID: roomType.ID,
+		Name: roomType.Name,
+		CreatedAt: roomType.CreatedAt,
+		UpdatedAt: roomType.UpdatedAt,
+		CreatedBy: ToBasicUserResponse(roomType.CreatedBy),
+		UpdatedBy: ToBasicUserResponse(roomType.UpdatedBy),
+	}
+}
+
+func ToRoomTypesResponse(roomTypes []*model.RoomType) []*types.RoomTypeResponse {
+	if len(roomTypes) == 0 {
+		return make([]*types.RoomTypeResponse, 0)
+	}
+
+	roomTypesRes := make([]*types.RoomTypeResponse, 0, len(roomTypes))
+	for _, roomType := range roomTypes {
+		roomTypesRes = append(roomTypesRes, ToRoomTypeResponse(roomType))
+	}
+
+	return roomTypesRes
+}
