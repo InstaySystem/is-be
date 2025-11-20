@@ -180,3 +180,14 @@ type UpdateRoomRequest struct {
 	Floor      *string `json:"floor" binding:"omitempty"`
 	RoomTypeID *int64  `json:"room_type_id" binding:"omitempty"`
 }
+
+type BookingPaginationQuery struct {
+	Page   uint32 `form:"page" binding:"omitempty,min=1" json:"page"`
+	Limit  uint32 `form:"limit" binding:"omitempty,min=1,max=100" json:"limit"`
+	Sort   string `form:"sort" json:"sort"`
+	Order  string `form:"order" binding:"omitempty,oneof=asc desc" json:"order"`
+	Filter string `form:"filter" binding:"omitempty"`
+	From   string `form:"from"   binding:"omitempty,datetime=2006-01-02"`
+	To     string `form:"to"     binding:"omitempty,datetime=2006-01-02"`
+	Search string `form:"search" json:"search"`
+}

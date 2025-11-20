@@ -51,6 +51,15 @@ type SimpleUserResponse struct {
 	Department *SimpleDepartmentResponse `json:"department"`
 }
 
+type SimpleBookingResponse struct {
+	ID            int64     `json:"id"`
+	BookingNumber string    `json:"booking_number"`
+	GuestFullName string    `json:"guest_name"`
+	BookedOn      time.Time `json:"booked_on"`
+	CheckIn       time.Time `json:"check_in"`
+	CheckOut      time.Time `json:"check_out"`
+}
+
 type BasicUserResponse struct {
 	ID        int64  `json:"id"`
 	Username  string `json:"username"`
@@ -62,16 +71,6 @@ type SimpleDepartmentResponse struct {
 	ID          int64  `json:"id"`
 	Name        string `json:"name"`
 	DisplayName string `json:"display_name"`
-}
-
-type UserListResponse struct {
-	Users []*SimpleUserResponse `json:"users"`
-	Meta  *MetaResponse         `json:"meta"`
-}
-
-type ServiceListResponse struct {
-	Services []*SimpleServiceResponse `json:"services"`
-	Meta     *MetaResponse            `json:"meta"`
 }
 
 type MetaResponse struct {
@@ -153,4 +152,25 @@ type RoomTypeResponse struct {
 	CreatedBy *BasicUserResponse `json:"created_by"`
 	UpdatedBy *BasicUserResponse `json:"updated_by"`
 	RoomCount int64              `json:"room_count"`
+}
+
+type BookingResponse struct {
+	ID                 int64     `json:"id"`
+	BookingNumber      string    `json:"booking_number"`
+	GuestFullName      string    `json:"guest_full_name"`
+	GuestEmail         string    `json:"guest_email"`
+	GuestPhone         string    `json:"guest_phone"`
+	CheckIn            time.Time `json:"check_in"`
+	CheckOut           time.Time `json:"check_out"`
+	RoomType           string    `json:"room_type"`
+	RoomNumber         uint32    `json:"room_number"`
+	GuestNumber        string    `json:"guest_number"`
+	BookedOn           time.Time `json:"booked_on"`
+	Source             string    `json:"source"`
+	TotalNetPrice      float64   `json:"total_net_price"`
+	TotalSellPrice     float64   `json:"total_sell_price"`
+	PromotionName      string    `json:"promotion_name"`
+	MealPlan           string    `json:"meal_plan"`
+	BookingPreferences string    `json:"booking_references"`
+	BookingConditions  string    `json:"booking_conditions"`
 }

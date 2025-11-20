@@ -143,7 +143,10 @@ func (h *UserHandler) GetUsers(c *gin.Context) {
 		return
 	}
 
-	common.ToAPIResponse(c, http.StatusOK, "Get user list successfully", common.ToUserListResponse(users, meta))
+	common.ToAPIResponse(c, http.StatusOK, "Get user list successfully", gin.H{
+		"users": common.ToSimpleUsersResponse(users),
+		"meta": meta,
+	})
 }
 
 // GetAllRoles godoc

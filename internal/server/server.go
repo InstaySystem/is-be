@@ -97,6 +97,7 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	router.ServiceRouter(api, ctn.ServiceCtn.Hdl, ctn.AuthMid)
 	router.RequestRouter(api, ctn.RequestCtn.Hdl, ctn.AuthMid)
 	router.RoomRouter(api, ctn.RoomCtn.Hdl, ctn.AuthMid)
+	router.BookingRouter(api, ctn.BookingCtx.Hdl, ctn.AuthMid)
 
 	api.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 

@@ -56,12 +56,10 @@ func NewListenWorker(
 }
 
 func (w *ListenWorker) Start() {
-	w.logger.Info("Starting email listener")
 	go w.runEmailListener()
 }
 
 func (w *ListenWorker) Stop() {
-	w.logger.Info("Stopping listen worker")
 	w.cancel()
 }
 
@@ -70,7 +68,6 @@ func (w *ListenWorker) runEmailListener() {
 	for {
 		select {
 		case <-w.ctx.Done():
-			w.logger.Info("Email listener context cancelled, exiting")
 			return
 		default:
 		}
@@ -258,7 +255,7 @@ func (w *ListenWorker) processEmail(msg *imap.Message, section *imap.BodySection
 		return
 	}
 
-	if err := w.bookingRepo.CreateBooking(w.ctx, bookingData); err != nil {
+	if err := w.bookingRepo.Create(w.ctx, bookingData); err != nil {
 		w.logger.Error("create booking failed", zap.Error(err))
 	} else {
 		w.logger.Info("booking created successfully",
@@ -275,26 +272,33 @@ func (w *ListenWorker) parseBookingFromHTML(htmlContent string) (*model.Booking,
 
 	booking := &model.Booking{}
 
-	doc.Find("td").Each(func(i int, s *goquery.Selection) {
-		if strings.Contains(s.Text(), "Booking number:") {
-			booking.BookingNumber = strings.TrimSpace(s.Find("span").Last().Text())
-		}
-	})
+	clean := func(s string) string {
+		s = strings.ReplaceAll(s, "\u00a0", " ")
+		return strings.TrimSpace(s)
+	}
 
 	findValueByLabel := func(label string) *goquery.Selection {
 		var result *goquery.Selection
 		doc.Find("div[style*='display: flex']").Each(func(i int, s *goquery.Selection) {
 			labelDiv := s.Find("div").First()
-			if strings.Contains(strings.TrimSpace(labelDiv.Text()), label) {
+			if strings.Contains(clean(labelDiv.Text()), label) {
 				result = s.Find("div").Eq(1)
 			}
 		})
 		return result
 	}
 
+	doc.Find("td").Each(func(i int, s *goquery.Selection) {
+		if strings.Contains(s.Text(), "Booking number:") {
+			if val := clean(s.Find("span").Last().Text()); val != "" {
+				booking.BookingNumber = val
+			}
+		}
+	})
+
 	if guestDiv := findValueByLabel("Guest:"); guestDiv != nil {
 		guestDiv.Find("div").Each(func(i int, s *goquery.Selection) {
-			text := strings.TrimSpace(s.Text())
+			text := clean(s.Text())
 			if text == "" {
 				return
 			}
@@ -311,13 +315,13 @@ func (w *ListenWorker) parseBookingFromHTML(htmlContent string) (*model.Booking,
 	}
 
 	if val := findValueByLabel("Check-in:"); val != nil {
-		booking.CheckIn = parseDateString(val.Text())
+		booking.CheckIn = parseDateString(clean(val.Text()))
 	}
 	if val := findValueByLabel("Check-out:"); val != nil {
-		booking.CheckOut = parseDateString(val.Text())
+		booking.CheckOut = parseDateString(clean(val.Text()))
 	}
 	if val := findValueByLabel("Booked on:"); val != nil {
-		booking.BookedOn = parseDateString(val.Text())
+		booking.BookedOn = parseDateString(clean(val.Text()))
 	}
 
 	if val := findValueByLabel("Rooms booked:"); val != nil {
@@ -328,33 +332,46 @@ func (w *ListenWorker) parseBookingFromHTML(htmlContent string) (*model.Booking,
 				booking.RoomNumber = uint32(num)
 			}
 		}
+
 		if len(parts) > 1 {
-			booking.RoomType = strings.TrimSpace(parts[1])
+			if t := clean(parts[1]); t != "" {
+				booking.RoomType = t
+			}
 		} else {
-			booking.RoomType = rawRoom
+			if rawRoom != "" {
+				booking.RoomType = rawRoom
+			}
 		}
 	}
 
 	if val := findValueByLabel("Booking source:"); val != nil {
-		booking.Source = strings.TrimSpace(val.Text())
+		if v := clean(val.Text()); v != "" {
+			booking.Source = v
+		}
 	}
 
 	if val := findValueByLabel("Total net price:"); val != nil {
-		booking.TotalNetPrice = parsePrice(val.Text())
+		booking.TotalNetPrice = parsePrice(clean(val.Text()))
 	}
 	if val := findValueByLabel("Total sell price:"); val != nil {
-		booking.TotalSellPrice = parsePrice(val.Text())
+		booking.TotalSellPrice = parsePrice(clean(val.Text()))
 	}
 
 	if val := findValueByLabel("Number of guests:"); val != nil {
-		booking.GuestNumber = strings.TrimSpace(val.Text())
+		if v := clean(val.Text()); v != "" {
+			booking.GuestNumber = v
+		}
 	}
 
 	if val := findValueByLabel("Promo name:"); val != nil {
-		booking.PromotionName = strings.TrimSpace(val.Text())
+		if v := clean(val.Text()); v != "" {
+			booking.PromotionName = v
+		}
 	}
 	if val := findValueByLabel("Booking conditions:"); val != nil {
-		booking.BookingConditions = strings.TrimSpace(val.Text())
+		if v := clean(val.Text()); v != "" {
+			booking.BookingConditions = v
+		}
 	}
 
 	if booking.BookingNumber == "" {

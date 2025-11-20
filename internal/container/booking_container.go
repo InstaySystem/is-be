@@ -1,17 +1,29 @@
 package container
 
 import (
+	"github.com/InstaySystem/is-be/internal/handler"
 	"github.com/InstaySystem/is-be/internal/repository"
 	repoImpl "github.com/InstaySystem/is-be/internal/repository/implement"
+	svcImpl "github.com/InstaySystem/is-be/internal/service/implement"
+	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 type BookingContainer struct {
+	Hdl  *handler.BookingHandler
 	Repo repository.BookingRepository
 }
 
-func NewBookingContainer(db *gorm.DB) *BookingContainer {
+func NewBookingContainer(
+	db *gorm.DB,
+	logger *zap.Logger,
+) *BookingContainer {
 	repo := repoImpl.NewBookingRepository(db)
-	
-	return &BookingContainer{repo}
+	svc := svcImpl.NewBookingService(repo, logger)
+	hdl := handler.NewBookingHandler(svc)
+
+	return &BookingContainer{
+		hdl,
+		repo,
+	}
 }

@@ -64,4 +64,6 @@ var (
 	ErrRoomTypeNotFound = errors.New("room type not found")
 
 	ErrRoomNotFound = errors.New("room not found")
+
+	ErrBookingNotFound = errors.New("booking not found")
 )

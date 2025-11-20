@@ -84,13 +84,6 @@ func ToSimpleUsersResponse(users []*model.User) []*types.SimpleUserResponse {
 	return usersRes
 }
 
-func ToUserListResponse(users []*model.User, meta *types.MetaResponse) *types.UserListResponse {
-	return &types.UserListResponse{
-		Users: ToSimpleUsersResponse(users),
-		Meta:  meta,
-	}
-}
-
 func ToDepartmentResponse(department *model.Department) *types.DepartmentResponse {
 	return &types.DepartmentResponse{
 		ID:          department.ID,
@@ -224,13 +217,6 @@ func ToSimpleServicesResponse(services []*model.Service) []*types.SimpleServiceR
 	return servicesRes
 }
 
-func ToServiceListResponse(services []*model.Service, meta *types.MetaResponse) *types.ServiceListResponse {
-	return &types.ServiceListResponse{
-		Services: ToSimpleServicesResponse(services),
-		Meta:     meta,
-	}
-}
-
 func ToServiceImageResponse(image *model.ServiceImage) *types.ServiceImageResponse {
 	if image == nil {
 		return nil
@@ -346,4 +332,59 @@ func ToRoomTypesResponse(roomTypes []*model.RoomType) []*types.RoomTypeResponse 
 	}
 
 	return roomTypesRes
+}
+
+func ToSimpleBookingResponse(booking *model.Booking) *types.SimpleBookingResponse {
+	if booking == nil {
+		return nil
+	}
+
+	return &types.SimpleBookingResponse{
+		ID:            booking.ID,
+		BookingNumber: booking.BookingNumber,
+		GuestFullName: booking.GuestFullName,
+		BookedOn:      booking.BookedOn,
+		CheckIn:       booking.CheckIn,
+		CheckOut:      booking.CheckOut,
+	}
+}
+
+func ToSimpleBookingsResponse(bookings []*model.Booking) []*types.SimpleBookingResponse {
+	if len(bookings) == 0 {
+		return make([]*types.SimpleBookingResponse, 0)
+	}
+
+	bookingsRes := make([]*types.SimpleBookingResponse, 0, len(bookings))
+	for _, booking := range bookings {
+		bookingsRes = append(bookingsRes, ToSimpleBookingResponse(booking))
+	}
+
+	return bookingsRes
+}
+
+func ToBookingResponse(booking *model.Booking) *types.BookingResponse {
+	if booking == nil {
+		return nil
+	}
+
+	return &types.BookingResponse{
+		ID:                 booking.ID,
+		BookingNumber:      booking.BookingNumber,
+		GuestFullName:      booking.GuestFullName,
+		GuestEmail:         booking.GuestEmail,
+		GuestPhone:         booking.GuestPhone,
+		CheckIn:            booking.CheckIn,
+		CheckOut:           booking.CheckOut,
+		RoomType:           booking.RoomType,
+		RoomNumber:         booking.RoomNumber,
+		GuestNumber:        booking.GuestNumber,
+		BookedOn:           booking.BookedOn,
+		Source:             booking.Source,
+		TotalNetPrice:      booking.TotalNetPrice,
+		TotalSellPrice:     booking.TotalSellPrice,
+		PromotionName:      booking.PromotionName,
+		MealPlan:           booking.MealPlan,
+		BookingPreferences: booking.BookingPreferences,
+		BookingConditions:  booking.BookingConditions,
+	}
 }

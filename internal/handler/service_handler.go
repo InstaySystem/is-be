@@ -286,7 +286,10 @@ func (h *ServiceHandler) GetServicesForAdmin(c *gin.Context) {
 		return
 	}
 
-	common.ToAPIResponse(c, http.StatusOK, "Get service list successfully", common.ToServiceListResponse(services, meta))
+	common.ToAPIResponse(c, http.StatusOK, "Get service list successfully", gin.H{
+		"services": common.ToSimpleServicesResponse(services),
+		"meta": meta,
+	})
 }
 
 // GetServiceByID godoc
