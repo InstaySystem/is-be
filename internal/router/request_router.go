@@ -13,8 +13,8 @@ func RequestRouter(rg *gin.RouterGroup, hdl *handler.RequestHandler, authMid *mi
 
 		admin.GET("/request-types", hdl.GetRequestTypesForAdmin)
 
-		admin.PATCH("/request-types", hdl.UpdateRequestType)
+		admin.PATCH("/request-types/:id", hdl.UpdateRequestType)
 
-		admin.DELETE("/request-types", hdl.DeleteRequestType)
+		admin.DELETE("/request-types/:id", hdl.DeleteRequestType)
 	}
 }

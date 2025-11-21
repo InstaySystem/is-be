@@ -174,3 +174,8 @@ type BookingResponse struct {
 	BookingPreferences string    `json:"booking_references"`
 	BookingConditions  string    `json:"booking_conditions"`
 }
+
+type FloorResponse struct {
+	ID   int64  `json:"id"`
+	Name string `json:"name"`
+}

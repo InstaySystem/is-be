@@ -28,4 +28,6 @@ type RoomRepository interface {
 	UpdateRoom(ctx context.Context, roomID int64, updateData map[string]any) error
 
 	DeleteRoom(ctx context.Context, roomID int64) error
+
+	FindAllFloors(ctx context.Context) ([]*model.Floor, error)
 }

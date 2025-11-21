@@ -9,6 +9,7 @@ import (
 	"github.com/InstaySystem/is-be/internal/common"
 	"github.com/InstaySystem/is-be/internal/model"
 	"github.com/InstaySystem/is-be/internal/provider/cache"
+	"github.com/InstaySystem/is-be/internal/provider/jwt"
 	"github.com/InstaySystem/is-be/internal/repository"
 	"github.com/InstaySystem/is-be/internal/service"
 	"github.com/InstaySystem/is-be/internal/types"
@@ -22,6 +23,7 @@ type orderSvcImpl struct {
 	sfGen         snowflake.Generator
 	logger        *zap.Logger
 	cacheProvider cache.CacheProvider
+	jwtProvider   jwt.JWTProvider
 }
 
 func NewOrderService(
@@ -30,6 +32,7 @@ func NewOrderService(
 	sfGen snowflake.Generator,
 	logger *zap.Logger,
 	cacheProvider cache.CacheProvider,
+	jwtProvider jwt.JWTProvider,
 ) service.OrderService {
 	return &orderSvcImpl{
 		orderRepo,
@@ -37,6 +40,7 @@ func NewOrderService(
 		sfGen,
 		logger,
 		cacheProvider,
+		jwtProvider,
 	}
 }
 
@@ -82,9 +86,6 @@ func (s *orderSvcImpl) CreateOrderRoom(ctx context.Context, userID int64, req ty
 
 	redisKey := fmt.Sprintf("instay:order-room:%s", secretCode)
 	ttl := booking.CheckOut.Sub(time.Now())
-	if ttl <= 0 {
-		ttl = time.Second
-	}
 
 	if err = s.cacheProvider.SetObject(ctx, redisKey, bytes, ttl); err != nil {
 		s.logger.Error("save order room data failed", zap.Error(err))
@@ -92,4 +93,32 @@ func (s *orderSvcImpl) CreateOrderRoom(ctx context.Context, userID int64, req ty
 	}
 
 	return id, secretCode, nil
+}
+
+func (s *orderSvcImpl) VerifyOrderRoom(ctx context.Context, secretCode string) (string, time.Duration, error) {
+	redisKey := fmt.Sprintf("instay:order-room:%s", secretCode)
+	bytes, err := s.cacheProvider.GetObject(ctx, redisKey)
+	if err != nil {
+		s.logger.Error("get order room data failed", zap.Error(err))
+		return "", 0, err
+	}
+	if bytes == nil {
+		return "", 0, common.ErrInvalidToken
+	}
+
+	var orderRoomData types.OrderRoomData
+	if err = json.Unmarshal(bytes, &orderRoomData); err != nil {
+		s.logger.Error("unmarshal order room data failed", zap.Error(err))
+		return "", 0, err
+	}
+
+	ttl := orderRoomData.ExpiredAt.Sub(time.Now())
+
+	guestToken, err := s.jwtProvider.GenerateGuestToken(orderRoomData.ID, ttl)
+	if err != nil {
+		s.logger.Error("generate guest token failed", zap.Error(err))
+		return "", 0, err
+	}
+
+	return guestToken, ttl, nil
 }

@@ -3,6 +3,7 @@ package container
 import (
 	"github.com/InstaySystem/is-be/internal/handler"
 	"github.com/InstaySystem/is-be/internal/provider/cache"
+	"github.com/InstaySystem/is-be/internal/provider/jwt"
 	repoImpl "github.com/InstaySystem/is-be/internal/repository/implement"
 	svcImpl "github.com/InstaySystem/is-be/internal/service/implement"
 	"github.com/InstaySystem/is-be/pkg/snowflake"
@@ -19,11 +20,13 @@ func NewOrderContainer(
 	sfGen snowflake.Generator,
 	logger *zap.Logger,
 	cacheProvider cache.CacheProvider,
+	jwtProvider jwt.JWTProvider,
+	guestName string,
 ) *OrderContainer {
 	orderRepo := repoImpl.NewOrderRepository(db)
 	bookingRepo := repoImpl.NewBookingRepository(db)
-	svc := svcImpl.NewOrderService(orderRepo, bookingRepo, sfGen, logger, cacheProvider)
-	hdl := handler.NewOrderHandler(svc)
+	svc := svcImpl.NewOrderService(orderRepo, bookingRepo, sfGen, logger, cacheProvider, jwtProvider)
+	hdl := handler.NewOrderHandler(svc, guestName)
 
 	return &OrderContainer{hdl}
 }

@@ -248,3 +248,18 @@ func (h *RoomHandler) DeleteRoom(c *gin.Context) {
 		return
 	}
 }
+
+func (h *RoomHandler) GetFloors(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	floors, err := h.roomSvc.GetFloors(ctx)
+	if err != nil {
+		common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
+		return
+	}
+
+	common.ToAPIResponse(c, http.StatusOK, "Get all floors successfully", gin.H{
+		"floors": common.ToFloorsResponse(floors),
+	})
+}

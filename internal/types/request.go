@@ -196,3 +196,7 @@ type CreateOrderRoomRequest struct {
 	BookingID int64 `json:"booking_id" binding:"required"`
 	RoomID    int64 `json:"room_id" binding:"required"`
 }
+
+type VerifyOrderRoomRequest struct {
+	SecretCode string `json:"secret_code" binding:"required"`
+}

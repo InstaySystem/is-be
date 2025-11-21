@@ -12,11 +12,18 @@ import (
 )
 
 type OrderHandler struct {
-	orderSvc service.OrderService
+	orderSvc  service.OrderService
+	guestName string
 }
 
-func NewOrderHandler(orderSvc service.OrderService) *OrderHandler {
-	return &OrderHandler{orderSvc}
+func NewOrderHandler(
+	orderSvc service.OrderService,
+	guestName string,
+) *OrderHandler {
+	return &OrderHandler{
+		orderSvc,
+		guestName,
+	}
 }
 
 func (h *OrderHandler) CreateOrderRoom(c *gin.Context) {
@@ -56,7 +63,34 @@ func (h *OrderHandler) CreateOrderRoom(c *gin.Context) {
 	}
 
 	common.ToAPIResponse(c, http.StatusCreated, "Order room created successfully", gin.H{
-		"id":         id,
-		"secretCode": secretCode,
+		"id":          id,
+		"secret_code": secretCode,
 	})
+}
+
+func (h *OrderHandler) VerifyOrderRoom(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	var req types.VerifyOrderRoomRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		mess := common.HandleValidationError(err)
+		common.ToAPIResponse(c, http.StatusBadRequest, mess, nil)
+		return
+	}
+
+	guestToken, ttl, err := h.orderSvc.VerifyOrderRoom(ctx, req.SecretCode)
+	if err != nil {
+		switch err {
+		case common.ErrInvalidToken:
+			common.ToAPIResponse(c, http.StatusBadRequest, err.Error(), nil)
+		default:
+			common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
+		}
+		return
+	}
+
+	c.SetCookie(h.guestName, guestToken, int(ttl.Seconds()), "/", "", false, true)
+
+	common.ToAPIResponse(c, http.StatusOK, "Order room verification successful", nil)
 }

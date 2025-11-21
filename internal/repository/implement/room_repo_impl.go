@@ -131,3 +131,12 @@ func (r *roomRepoImpl) DeleteRoom(ctx context.Context, roomID int64) error {
 
 	return nil
 }
+
+func (r *roomRepoImpl) FindAllFloors(ctx context.Context) ([]*model.Floor, error) {
+	var floors []*model.Floor
+	if err := r.db.WithContext(ctx).Find(&floors).Error; err != nil {
+		return nil, err
+	}
+
+	return floors, nil
+}

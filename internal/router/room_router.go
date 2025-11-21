@@ -22,5 +22,7 @@ func RoomRouter(rg *gin.RouterGroup, hdl *handler.RoomHandler, authMid *middlewa
 		admin.PATCH("/rooms/:id", hdl.UpdateRoom)
 
 		admin.DELETE("/rooms/:id", hdl.DeleteRoom)
+
+		admin.GET("/floors", hdl.GetFloors)
 	}
 }

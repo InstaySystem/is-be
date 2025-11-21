@@ -252,3 +252,13 @@ func (s *roomSvcImpl) DeleteRoom(ctx context.Context, roomID int64) error {
 
 	return nil
 }
+
+func (s *roomSvcImpl) GetFloors(ctx context.Context) ([]*model.Floor, error) {
+	floors, err := s.roomRepo.FindAllFloors(ctx)
+	if err != nil {
+		s.logger.Error("get all floors failed", zap.Error(err))
+		return nil, err
+	}
+
+	return floors, nil
+}

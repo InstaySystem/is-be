@@ -21,4 +21,6 @@ type RoomService interface {
 	UpdateRoom(ctx context.Context, roomID, userID int64, req types.UpdateRoomRequest) error
 
 	DeleteRoom(ctx context.Context, roomID int64) error
+
+	GetFloors(ctx context.Context) ([]*model.Floor, error)
 }

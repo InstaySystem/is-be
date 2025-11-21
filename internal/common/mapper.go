@@ -388,3 +388,27 @@ func ToBookingResponse(booking *model.Booking) *types.BookingResponse {
 		BookingConditions:  booking.BookingConditions,
 	}
 }
+
+func ToFloorResponse(floor *model.Floor) *types.FloorResponse {
+	if floor == nil {
+		return nil
+	}
+
+	return &types.FloorResponse{
+		ID:   floor.ID,
+		Name: floor.Name,
+	}
+}
+
+func ToFloorsResponse(floors []*model.Floor) []*types.FloorResponse {
+	if len(floors) == 0 {
+		return make([]*types.FloorResponse, 0)
+	}
+
+	floorsRes := make([]*types.FloorResponse, 0, len(floors))
+	for _, floor := range floors {
+		floorsRes = append(floorsRes, ToFloorResponse(floor))
+	}
+
+	return floorsRes
+}

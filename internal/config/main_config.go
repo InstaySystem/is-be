@@ -15,6 +15,7 @@ type Config struct {
 	JWT struct {
 		AccessName       string        `mapstructure:"access_name"`
 		RefreshName      string        `mapstructure:"refresh_name"`
+		GuestName        string        `mapstructure:"guest_name"`
 		SecretKey        string        `mapstructure:"secret_key"`
 		AccessExpiresIn  time.Duration `mapstructure:"access_expires_in"`
 		RefreshExpiresIn time.Duration `mapstructure:"refresh_expires_in"`

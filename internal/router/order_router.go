@@ -11,4 +11,6 @@ func OrderRouter(rg *gin.RouterGroup, hdl *handler.OrderHandler, authMid *middle
 	{
 		admin.POST("/orders/rooms", hdl.CreateOrderRoom)
 	}
+
+	rg.POST("/orders/rooms/verify", hdl.VerifyOrderRoom)
 }
