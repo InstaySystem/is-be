@@ -454,6 +454,35 @@ func ToFloorResponse(floor *model.Floor) *types.FloorResponse {
 	}
 }
 
+func ToSimpleRoomResponse(room *model.Room) *types.SimpleRoomResponse {
+	if room == nil {
+		return nil
+	}
+
+	return &types.SimpleRoomResponse{
+		ID:       room.ID,
+		Name:     room.Name,
+		RoomType: ToSimpleRoomTypeResponse(room.RoomType),
+		Floor:    ToFloorResponse(room.Floor),
+	}
+}
+
+func ToOrderRoomResponse(orderRoom *model.OrderRoom) *types.OrderRoomResponse {
+	if orderRoom == nil {
+		return nil
+	}
+
+	return &types.OrderRoomResponse{
+		ID:        orderRoom.ID,
+		CreatedAt: orderRoom.CreatedAt,
+		UpdatedAt: orderRoom.UpdatedAt,
+		CreatedBy: ToBasicUserResponse(orderRoom.CreatedBy),
+		UpdatedBy: ToBasicUserResponse(orderRoom.UpdatedBy),
+		Room:      ToSimpleRoomResponse(orderRoom.Room),
+		Booking:   ToSimpleBookingResponse(orderRoom.Booking),
+	}
+}
+
 func ToFloorsResponse(floors []*model.Floor) []*types.FloorResponse {
 	if len(floors) == 0 {
 		return make([]*types.FloorResponse, 0)

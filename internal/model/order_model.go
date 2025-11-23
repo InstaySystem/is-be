@@ -8,8 +8,8 @@ type OrderRoom struct {
 	UpdatedAt   time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 	CreatedByID int64     `gorm:"type:bigint;not null" json:"created_by_id"`
 	UpdatedByID int64     `gorm:"type:bigint;not null" json:"updated_by_id"`
-	RoomID      int64     `gorm:"type:bigint;not null" json:"room_id"`
-	BookingID   int64     `gorm:"type:bigint;not null" json:"booking_id"`
+	RoomID      int64     `gorm:"type:bigint;not null;uniqueIndex:order_rooms_room_id_booking_id_key" json:"room_id"`
+	BookingID   int64     `gorm:"type:bigint;not null;uniqueIndex:order_rooms_room_id_booking_id_key" json:"booking_id"`
 
 	Room          *Room           `gorm:"foreignKey:RoomID;references:ID;constraint:fk_order_rooms_room,OnUpdate:CASCADE,OnDelete:RESTRICT" json:"room"`
 	Booking       *Booking        `gorm:"foreignKey:BookingID;references:ID;constraint:fk_order_rooms_booking,OnUpdate:CASCADE,OnDelete:RESTRICT" json:"booking"`

@@ -75,7 +75,7 @@ func NewContainer(
 	requestCtn := NewRequestContainer(requestRepo, sfGen, logger)
 	roomCtn := NewRoomContainer(roomRepo, sfGen, logger)
 	bookingCtn := NewBookingContainer(db, logger)
-	orderCtn := NewOrderContainer(orderRepo, bookingRepo, serviceRepo, notificationRepo, sfGen, logger, cacheProvider, jwtProvider, mqProvider, cfg.JWT.GuestName)
+	orderCtn := NewOrderContainer(db, orderRepo, bookingRepo, serviceRepo, notificationRepo, sfGen, logger, cacheProvider, jwtProvider, mqProvider, cfg.JWT.GuestName)
 	sseCtn := NewSSEContainer(sseHub)
 
 	authMid := middleware.NewAuthMiddleware(cfg.JWT.AccessName, cfg.JWT.RefreshName, cfg.JWT.GuestName, userRepo, jwtProvider, logger, cacheProvider)

@@ -3,6 +3,7 @@ package handler
 import (
 	"context"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/InstaySystem/is-be/internal/common"
@@ -54,7 +55,7 @@ func (h *OrderHandler) CreateOrderRoom(c *gin.Context) {
 		switch err {
 		case common.ErrBookingNotFound, common.ErrRoomNotFound:
 			common.ToAPIResponse(c, http.StatusNotFound, err.Error(), nil)
-		case common.ErrBookingExpired:
+		case common.ErrBookingExpired, common.ErrOrderRoomDuplicate:
 			common.ToAPIResponse(c, http.StatusConflict, err.Error(), nil)
 		default:
 			common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
@@ -65,6 +66,33 @@ func (h *OrderHandler) CreateOrderRoom(c *gin.Context) {
 	common.ToAPIResponse(c, http.StatusCreated, "Order room created successfully", gin.H{
 		"id":          id,
 		"secret_code": secretCode,
+	})
+}
+
+func (h *OrderHandler) GetOrderRoomByID(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	orderRoomIDStr := c.Param("id")
+	orderRoomID, err := strconv.ParseInt(orderRoomIDStr, 10, 64)
+	if err != nil {
+		common.ToAPIResponse(c, http.StatusBadRequest, common.ErrInvalidID.Error(), nil)
+		return
+	}
+
+	orderRoom, err := h.orderSvc.GetOrderRoomByID(ctx, orderRoomID)
+	if err != nil {
+		switch err {
+		case common.ErrRoomNotFound:
+			common.ToAPIResponse(c, http.StatusNotFound, err.Error(), nil)
+		default:
+			common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
+		}
+		return
+	}
+
+	common.ToAPIResponse(c, http.StatusOK, "Get order room information successfully", gin.H{
+		"order_room": common.ToOrderRoomResponse(orderRoom),
 	})
 }
 

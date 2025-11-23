@@ -70,4 +70,6 @@ var (
 	ErrBookingNotFound = errors.New("booking not found")
 
 	ErrBookingExpired = errors.New("booking expired")
+
+	ErrOrderRoomDuplicate = errors.New("order room duplicate")
 )

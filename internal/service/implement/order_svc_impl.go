@@ -16,9 +16,11 @@ import (
 	"github.com/InstaySystem/is-be/internal/types"
 	"github.com/InstaySystem/is-be/pkg/snowflake"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type orderSvcImpl struct {
+	db               *gorm.DB
 	orderRepo        repository.OrderRepository
 	bookingRepo      repository.BookingRepository
 	serviceRepo      repository.ServiceRepository
@@ -31,6 +33,7 @@ type orderSvcImpl struct {
 }
 
 func NewOrderService(
+	db *gorm.DB,
 	orderRepo repository.OrderRepository,
 	bookingRepo repository.BookingRepository,
 	serviceRepo repository.ServiceRepository,
@@ -42,6 +45,7 @@ func NewOrderService(
 	mqProvider mq.MessageQueueProvider,
 ) service.OrderService {
 	return &orderSvcImpl{
+		db,
 		orderRepo,
 		bookingRepo,
 		serviceRepo,
@@ -83,6 +87,9 @@ func (s *orderSvcImpl) CreateOrderRoom(ctx context.Context, userID int64, req ty
 		if common.IsForeignKeyViolation(err) {
 			return 0, "", common.ErrRoomNotFound
 		}
+		if ok, _ := common.IsUniqueViolation(err); ok {
+			return 0, "", common.ErrOrderRoomDuplicate
+		}
 		s.logger.Error("create order room failed", zap.Error(err))
 		return 0, "", err
 	}
@@ -103,6 +110,19 @@ func (s *orderSvcImpl) CreateOrderRoom(ctx context.Context, userID int64, req ty
 	}
 
 	return id, secretCode, nil
+}
+
+func (s *orderSvcImpl) GetOrderRoomByID(ctx context.Context, orderRoomID int64) (*model.OrderRoom, error) {
+	orderRoom, err := s.orderRepo.FindOrderRoomByIDWithDetails(ctx, orderRoomID)
+	if err != nil {
+		s.logger.Error("find order room by id failed", zap.Int64("id", orderRoomID), zap.Error(err))
+		return nil, err
+	}
+	if orderRoom == nil {
+		return nil, common.ErrOrderRoomNotFound
+	}
+
+	return orderRoom, nil
 }
 
 func (s *orderSvcImpl) VerifyOrderRoom(ctx context.Context, secretCode string) (string, time.Duration, error) {
@@ -134,12 +154,6 @@ func (s *orderSvcImpl) VerifyOrderRoom(ctx context.Context, secretCode string) (
 }
 
 func (s *orderSvcImpl) CreateOrderService(ctx context.Context, orderRoomID int64, req types.CreateOrderServiceRequest) (int64, error) {
-	orderServiceID, err := s.sfGen.NextID()
-	if err != nil {
-		s.logger.Error("generate order service ID failed", zap.Error(err))
-		return 0, err
-	}
-
 	orderRoom, err := s.orderRepo.FindOrderRoomByIDWithRoom(ctx, orderRoomID)
 	if err != nil {
 		s.logger.Error("find order room by id failed", zap.Int64("id", orderRoomID), zap.Error(err))
@@ -149,13 +163,19 @@ func (s *orderSvcImpl) CreateOrderService(ctx context.Context, orderRoomID int64
 		return 0, common.ErrOrderRoomNotFound
 	}
 
-	service, err := s.serviceRepo.FindServiceByIDWithServiceTypeWithDepartmentWithStaffs(ctx, req.ServiceID)
+	service, err := s.serviceRepo.FindServiceByIDWithServiceTypeDetails(ctx, req.ServiceID)
 	if err != nil {
 		s.logger.Error("find service by id failed", zap.Int64("id", req.ServiceID), zap.Error(err))
 		return 0, err
 	}
 	if service == nil {
 		return 0, common.ErrServiceNotFound
+	}
+
+	orderServiceID, err := s.sfGen.NextID()
+	if err != nil {
+		s.logger.Error("generate order service ID failed", zap.Error(err))
+		return 0, err
 	}
 
 	orderService := &model.OrderService{
@@ -166,11 +186,6 @@ func (s *orderSvcImpl) CreateOrderService(ctx context.Context, orderRoomID int64
 		TotalPrice:  float64(req.Quantity) * service.Price,
 		Status:      "pending",
 		GuestNote:   *req.GuestNote,
-	}
-
-	if err = s.orderRepo.CreateOrderService(ctx, orderService); err != nil {
-		s.logger.Error("create order service failed", zap.Error(err))
-		return 0, err
 	}
 
 	notificationID, err := s.sfGen.NextID()
@@ -189,8 +204,18 @@ func (s *orderSvcImpl) CreateOrderService(ctx context.Context, orderRoomID int64
 		ContentID:    service.ID,
 	}
 
-	if err = s.notificationRepo.CreateNotification(ctx, notification); err != nil {
-		s.logger.Error("create notification failed", zap.Error(err))
+	if err = s.db.Transaction(func(tx *gorm.DB) error {
+		if err = s.orderRepo.CreateOrderServiceTx(ctx, tx, orderService); err != nil {
+			s.logger.Error("create order service failed", zap.Error(err))
+			return err
+		}
+
+		if err = s.notificationRepo.CreateNotificationTx(ctx, tx, notification); err != nil {
+			s.logger.Error("create notification failed", zap.Error(err))
+			return err
+		}
+		return nil
+	}); err != nil {
 		return 0, err
 	}
 

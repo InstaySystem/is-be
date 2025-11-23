@@ -21,13 +21,25 @@ func (r *orderRepoImpl) CreateOrderRoom(ctx context.Context, orderRoom *model.Or
 	return r.db.WithContext(ctx).Create(orderRoom).Error
 }
 
-func (r *orderRepoImpl) CreateOrderService(ctx context.Context, orderService *model.OrderService) error {
-	return r.db.WithContext(ctx).Create(orderService).Error
+func (r *orderRepoImpl) CreateOrderServiceTx(ctx context.Context, tx *gorm.DB, orderService *model.OrderService) error {
+	return tx.WithContext(ctx).Create(orderService).Error
 }
 
 func (r *orderRepoImpl) FindOrderRoomByIDWithRoom(ctx context.Context, orderRoomID int64) (*model.OrderRoom, error) {
 	var orderRoom model.OrderRoom
 	if err := r.db.WithContext(ctx).Preload("Room").Where("id = ?", orderRoomID).First(&orderRoom).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &orderRoom, nil
+}
+
+func (r *orderRepoImpl) FindOrderRoomByIDWithDetails(ctx context.Context, orderRoomID int64) (*model.OrderRoom, error) {
+	var orderRoom model.OrderRoom
+	if err := r.db.WithContext(ctx).Preload("Room").Preload("Room.RoomType").Preload("Room.Floor").Preload("Booking").Preload("CreatedBy").Preload("UpdatedBy").Where("id = ?", orderRoomID).First(&orderRoom).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}

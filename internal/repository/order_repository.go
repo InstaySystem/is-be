@@ -4,12 +4,15 @@ import (
 	"context"
 
 	"github.com/InstaySystem/is-be/internal/model"
+	"gorm.io/gorm"
 )
 
 type OrderRepository interface {
 	CreateOrderRoom(ctx context.Context, orderRoom *model.OrderRoom) error
 
-	CreateOrderService(ctx context.Context, orderService *model.OrderService) error
+	CreateOrderServiceTx(ctx context.Context, tx *gorm.DB, orderService *model.OrderService) error
 
 	FindOrderRoomByIDWithRoom(ctx context.Context, orderRoomID int64) (*model.OrderRoom, error)
+
+	FindOrderRoomByIDWithDetails(ctx context.Context, orderRoomID int64) (*model.OrderRoom, error)
 }

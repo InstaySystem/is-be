@@ -39,7 +39,7 @@ type ServiceRepository interface {
 
 	FindServiceByIDWithServiceImages(ctx context.Context, serviceID int64) (*model.Service, error)
 
-	FindServiceByIDWithServiceTypeWithDepartmentWithStaffs(ctx context.Context, serviceID int64) (*model.Service, error)
+	FindServiceByIDWithServiceTypeDetails(ctx context.Context, serviceID int64) (*model.Service, error)
 
 	DeleteService(ctx context.Context, serviceID int64) error
 

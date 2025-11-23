@@ -9,6 +9,7 @@ import (
 	svcImpl "github.com/InstaySystem/is-be/internal/service/implement"
 	"github.com/InstaySystem/is-be/pkg/snowflake"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type OrderContainer struct {
@@ -16,6 +17,7 @@ type OrderContainer struct {
 }
 
 func NewOrderContainer(
+	db *gorm.DB,
 	orderRepo repository.OrderRepository,
 	bookingRepo repository.BookingRepository,
 	serviceRepo repository.ServiceRepository,
@@ -27,7 +29,7 @@ func NewOrderContainer(
 	mqProvider mq.MessageQueueProvider,
 	guestName string,
 ) *OrderContainer {
-	svc := svcImpl.NewOrderService(orderRepo, bookingRepo, serviceRepo, notificationRepo, sfGen, logger, cacheProvider, jwtProvider, mqProvider)
+	svc := svcImpl.NewOrderService(db, orderRepo, bookingRepo, serviceRepo, notificationRepo, sfGen, logger, cacheProvider, jwtProvider, mqProvider)
 	hdl := handler.NewOrderHandler(svc, guestName)
 
 	return &OrderContainer{hdl}

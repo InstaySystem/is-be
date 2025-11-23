@@ -337,7 +337,7 @@ func (m *AuthMiddleware) HasDepartment(department string) gin.HandlerFunc {
 
 		userData := userAny.(*types.UserData)
 
-		if userData.Department.Name == department || userData.Role == "admin" {
+		if (userData.Department != nil && userData.Department.Name == department) || userData.Role == "admin" {
 			c.Next()
 			return
 		}

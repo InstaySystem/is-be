@@ -10,6 +10,8 @@ func OrderRouter(rg *gin.RouterGroup, hdl *handler.OrderHandler, authMid *middle
 	admin := rg.Group("/admin", authMid.IsAuthentication(), authMid.HasDepartment("reception"))
 	{
 		admin.POST("/orders/rooms", hdl.CreateOrderRoom)
+
+		admin.GET("/orders/rooms/:id", hdl.GetOrderRoomByID)
 	}
 
 	rg.POST("/orders/rooms/verify", hdl.VerifyOrderRoom)
