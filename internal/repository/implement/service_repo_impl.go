@@ -113,7 +113,7 @@ func (r *serviceRepoImpl) FindServiceByIDWithDetails(ctx context.Context, servic
 
 func (r *serviceRepoImpl) FindServiceByIDWithServiceTypeDetails(ctx context.Context, serviceID int64) (*model.Service, error) {
 	var service model.Service
-	if err := r.db.WithContext(ctx).Preload("ServiceType").Preload("ServiceType.Department").Preload("ServiceType.Department.Staffs").Where("id = ?", serviceID).First(&service).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("ServiceType.Department.Staffs").Where("id = ?", serviceID).First(&service).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
@@ -136,8 +136,32 @@ func (r *serviceRepoImpl) DeleteServiceType(ctx context.Context, serviceTypeID i
 	return nil
 }
 
+func (r *serviceRepoImpl) FindServiceBySlugWithServiceTypeAndServiceImages(ctx context.Context, serviceSlug string) (*model.Service, error) {
+	var service model.Service
+	if err := r.db.WithContext(ctx).Preload("ServiceType").Preload("ServiceImages").Where("slug = ?", serviceSlug).First(&service).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &service, nil
+}
+
 func (r *serviceRepoImpl) CreateService(ctx context.Context, service *model.Service) error {
 	return r.db.WithContext(ctx).Create(service).Error
+}
+
+func (r *serviceRepoImpl) FindServiceTypeBySlugWithServiceDetails(ctx context.Context, serviceTypeSlug string) (*model.ServiceType, error) {
+	var serviceType model.ServiceType
+	if err := r.db.WithContext(ctx).Preload("Services.ServiceImages", "is_thumbnail = true").Where("slug = ?", serviceTypeSlug).First(&serviceType).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &serviceType, nil
 }
 
 func (r *serviceRepoImpl) DeleteService(ctx context.Context, serviceID int64) error {

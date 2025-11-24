@@ -445,3 +445,29 @@ func (s *serviceSvcImpl) DeleteService(ctx context.Context, serviceID int64) err
 
 	return nil
 }
+
+func (s *serviceSvcImpl) GetServiceTypeBySlug(ctx context.Context, serviceTypeSlug string) (*model.ServiceType, error) {
+	serviceType, err := s.serviceRepo.FindServiceTypeBySlugWithServiceDetails(ctx, serviceTypeSlug)
+	if err != nil {
+		s.logger.Error("find service type by slug failed", zap.String("slug", serviceTypeSlug), zap.Error(err))
+		return nil, err
+	}
+	if serviceType == nil {
+		return nil, common.ErrServiceTypeNotFound
+	}
+
+	return serviceType, nil
+}
+
+func (s *serviceSvcImpl) GetServiceBySlug(ctx context.Context, serviceSlug string) (*model.Service, error) {
+	service, err := s.serviceRepo.FindServiceBySlugWithServiceTypeAndServiceImages(ctx, serviceSlug)
+	if err != nil {
+		s.logger.Error("find service by slug failed", zap.String("slug", serviceSlug), zap.Error(err))
+		return nil, err
+	}
+	if service == nil {
+		return nil, common.ErrServiceNotFound
+	}
+
+	return service, nil
+}

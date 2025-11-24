@@ -27,4 +27,8 @@ type ServiceService interface {
 	UpdateService(ctx context.Context, serviceID, userID int64, req types.UpdateServiceRequest) error
 
 	DeleteService(ctx context.Context, serviceID int64) error
+
+	GetServiceTypeBySlug(ctx context.Context, serviceTypeSlug string) (*model.ServiceType, error)
+
+	GetServiceBySlug(ctx context.Context, serviceSlug string) (*model.Service, error)
 }

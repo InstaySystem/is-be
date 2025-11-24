@@ -96,6 +96,14 @@ type ServiceTypeResponse struct {
 type SimpleServiceTypeResponse struct {
 	ID   int64  `json:"id"`
 	Name string `json:"name"`
+	Slug string `json:"slug"`
+}
+
+type SimpleServiceTypeWithBaseServices struct {
+	ID       int64                  `json:"id"`
+	Name     string                 `json:"name"`
+	Slug     string                 `json:"slug"`
+	Services []*BaseServiceResponse `json:"services"`
 }
 
 type SimpleServiceImageResponse struct {
@@ -108,16 +116,25 @@ type ServiceImageResponse struct {
 	Key         string    `json:"key"`
 	IsThumbnail bool      `json:"is_thumbnail"`
 	SortOrder   uint32    `json:"sort_order"`
-	UploadedAt  time.Time `json:"uploaded_at"`
 }
 
-type SimpleServiceResponse struct {
+type BaseServiceResponse struct {
 	ID          int64                       `json:"id"`
 	Name        string                      `json:"name"`
+	Slug        string                      `json:"slug"`
 	Price       float64                     `json:"price"`
 	IsActive    bool                        `json:"is_active"`
 	ServiceType *SimpleServiceTypeResponse  `json:"service_type"`
 	Thumbnail   *SimpleServiceImageResponse `json:"thumbnail"`
+}
+
+type SimpleServiceResponse struct {
+	ID            int64                      `json:"id"`
+	Name          string                     `json:"name"`
+	Price         float64                    `json:"price"`
+	Description   string                     `json:"description"`
+	ServiceType   *SimpleServiceTypeResponse `json:"service_type"`
+	ServiceImages []*ServiceImageResponse    `json:"images"`
 }
 
 type ServiceResponse struct {

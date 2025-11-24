@@ -201,7 +201,7 @@ func (h *ServiceHandler) DeleteServiceType(c *gin.Context) {
 }
 
 // CreateService godoc
-// @Summary      Create Service 
+// @Summary      Create Service
 // @Description  Tạo một dịch vụ mới
 // @Tags         Services
 // @Accept       json
@@ -287,8 +287,8 @@ func (h *ServiceHandler) GetServicesForAdmin(c *gin.Context) {
 	}
 
 	common.ToAPIResponse(c, http.StatusOK, "Get service list successfully", gin.H{
-		"services": common.ToSimpleServicesResponse(services),
-		"meta": meta,
+		"services": common.ToBaseServicesResponse(services),
+		"meta":     meta,
 	})
 }
 
@@ -334,7 +334,7 @@ func (h *ServiceHandler) GetServiceByID(c *gin.Context) {
 }
 
 // UpdateService godoc
-// @Summary      Update Service 
+// @Summary      Update Service
 // @Description  Cập nhật thông tin của một dịch vụ bằng ID
 // @Tags         Services
 // @Accept       json
@@ -419,7 +419,7 @@ func (h *ServiceHandler) GetServiceTypesForGuest(c *gin.Context) {
 }
 
 // DeleteService godoc
-// @Summary      Delete Service 
+// @Summary      Delete Service
 // @Description  Xoá một dịch vụ bằng ID
 // @Tags         Services
 // @Produce      json
@@ -456,4 +456,48 @@ func (h *ServiceHandler) DeleteService(c *gin.Context) {
 	}
 
 	common.ToAPIResponse(c, http.StatusOK, "Service deleted successfully", nil)
+}
+
+func (h *ServiceHandler) GetServiceTypeBySlug(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	serviceTypeSlug := c.Param("slug")
+
+	serviceType, err := h.serviceSvc.GetServiceTypeBySlug(ctx, serviceTypeSlug)
+	if err != nil {
+		switch err {
+		case common.ErrServiceTypeNotFound:
+			common.ToAPIResponse(c, http.StatusNotFound, err.Error(), nil)
+		default:
+			common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
+		}
+		return
+	}
+
+	common.ToAPIResponse(c, http.StatusOK, "Get service type information successfully", gin.H{
+		"service_type": common.ToSimpleServiceTypeWithBaseServices(serviceType),
+	})
+}
+
+func (h *ServiceHandler) GetServiceBySlug(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	serviceSlug := c.Param("slug")
+
+	service, err := h.serviceSvc.GetServiceBySlug(ctx, serviceSlug)
+	if err != nil {
+		switch err {
+		case common.ErrServiceNotFound:
+			common.ToAPIResponse(c, http.StatusNotFound, err.Error(), nil)
+		default:
+			common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
+		}
+		return
+	}
+
+	common.ToAPIResponse(c, http.StatusOK, "Get service information successfully", gin.H{
+		"service_type": common.ToSimpleServiceResponse(service),
+	})
 }

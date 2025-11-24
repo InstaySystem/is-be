@@ -219,14 +219,15 @@ func ToSimpleServiceImageResponse(image *model.ServiceImage) *types.SimpleServic
 	}
 }
 
-func ToSimpleServiceResponse(service *model.Service) *types.SimpleServiceResponse {
+func ToBaseServiceResponse(service *model.Service) *types.BaseServiceResponse {
 	if service == nil {
 		return nil
 	}
 
-	return &types.SimpleServiceResponse{
+	return &types.BaseServiceResponse{
 		ID:          service.ID,
 		Name:        service.Name,
+		Slug:        service.Slug,
 		Price:       service.Price,
 		IsActive:    service.IsActive,
 		ServiceType: ToSimpleServiceTypeResponse(service.ServiceType),
@@ -234,17 +235,45 @@ func ToSimpleServiceResponse(service *model.Service) *types.SimpleServiceRespons
 	}
 }
 
-func ToSimpleServicesResponse(services []*model.Service) []*types.SimpleServiceResponse {
-	if len(services) == 0 {
-		return make([]*types.SimpleServiceResponse, 0)
+func ToSimpleServiceResponse(service *model.Service) *types.SimpleServiceResponse {
+	if service == nil {
+		return nil
 	}
 
-	servicesRes := make([]*types.SimpleServiceResponse, 0, len(services))
+	return &types.SimpleServiceResponse{
+		ID:            service.ID,
+		Name:          service.Name,
+		Price:         service.Price,
+		Description:   service.Description,
+		ServiceType:   ToSimpleServiceTypeResponse(service.ServiceType),
+		ServiceImages: ToServiceImagesResponse(service.ServiceImages),
+	}
+}
+
+func ToBaseServicesResponse(services []*model.Service) []*types.BaseServiceResponse {
+	if len(services) == 0 {
+		return make([]*types.BaseServiceResponse, 0)
+	}
+
+	servicesRes := make([]*types.BaseServiceResponse, 0, len(services))
 	for _, service := range services {
-		servicesRes = append(servicesRes, ToSimpleServiceResponse(service))
+		servicesRes = append(servicesRes, ToBaseServiceResponse(service))
 	}
 
 	return servicesRes
+}
+
+func ToSimpleServiceTypeWithBaseServices(serviceType *model.ServiceType) *types.SimpleServiceTypeWithBaseServices {
+	if serviceType == nil {
+		return nil
+	}
+
+	return &types.SimpleServiceTypeWithBaseServices{
+		ID:       serviceType.ID,
+		Name:     serviceType.Name,
+		Slug:     serviceType.Slug,
+		Services: ToBaseServicesResponse(serviceType.Services),
+	}
 }
 
 func ToServiceImageResponse(image *model.ServiceImage) *types.ServiceImageResponse {
