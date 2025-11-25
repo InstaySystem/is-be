@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/InstaySystem/is-be/internal/common"
@@ -201,7 +202,7 @@ func (s *orderSvcImpl) CreateOrderService(ctx context.Context, orderRoomID int64
 		Type:         "service",
 		Receiver:     "staff",
 		Content:      content,
-		ContentID:    service.ID,
+		ContentID:    orderService.ID,
 	}
 
 	if err = s.db.Transaction(func(tx *gorm.DB) error {
@@ -235,10 +236,92 @@ func (s *orderSvcImpl) CreateOrderService(ctx context.Context, orderRoomID int64
 
 	go func(msg types.ServiceNotificationMessage) {
 		body, _ := json.Marshal(msg)
-		if s.mqProvider.PublishMessage(common.ExchangeNotification, common.RoutingKeyServiceNotification, body); err != nil {
+		if err := s.mqProvider.PublishMessage(common.ExchangeNotification, common.RoutingKeyServiceNotification, body); err != nil {
 			s.logger.Error("publish service notification message failed", zap.Error(err))
 		}
 	}(serviceNotificationMsg)
 
 	return orderServiceID, nil
+}
+
+func (s *orderSvcImpl) CancelOrderService(ctx context.Context, orderRoomID, orderServiceID int64) error {
+	orderRoom, err := s.orderRepo.FindOrderRoomByIDWithRoom(ctx, orderRoomID)
+	if err != nil {
+		s.logger.Error("find order room by id failed", zap.Int64("id", orderRoomID), zap.Error(err))
+		return err
+	}
+	if orderRoom == nil {
+		return common.ErrOrderRoomNotFound
+	}
+
+	if err = s.db.Transaction(func(tx *gorm.DB) error {
+		orderService, err := s.orderRepo.FindOrderServiceByIDWithServiceDetailsTx(ctx, tx, orderServiceID)
+		if err != nil {
+			if strings.Contains(err.Error(), "lock") {
+				return common.ErrLockedRecord
+			}
+			s.logger.Error("find order service by id failed", zap.Int64("id", orderServiceID), zap.Error(err))
+			return err
+		}
+		if orderService == nil {
+			return common.ErrOrderServiceNotFound
+		}
+
+		if orderService.Status != "pending" {
+			return common.ErrInvalidStatus
+		}
+
+		if err = s.orderRepo.UpdateOrderServiceTx(ctx, tx, orderServiceID, map[string]any{"status": "canceled"}); err != nil {
+			s.logger.Error("cancel order service failed", zap.Int64("id", orderServiceID), zap.Error(err))
+			return err
+		}
+
+		notificationID, err := s.sfGen.NextID()
+		if err != nil {
+			s.logger.Error("generate notification ID failed", zap.Error(err))
+			return err
+		}
+
+		content := fmt.Sprintf("Phòng %s đã hủy dịch vụ %s", orderRoom.Room.Name, orderService.Service.Name)
+		notification := &model.Notification{
+			ID:           notificationID,
+			DepartmentID: orderService.Service.ServiceType.DepartmentID,
+			Type:         "service",
+			Receiver:     "staff",
+			Content:      content,
+			ContentID:    orderService.ID,
+		}
+
+		if err = s.notificationRepo.CreateNotificationTx(ctx, tx, notification); err != nil {
+			s.logger.Error("create notification failed", zap.Error(err))
+			return err
+		}
+
+		staffIDs := make([]int64, 0, len(orderService.Service.ServiceType.Department.Staffs))
+		for _, staff := range orderService.Service.ServiceType.Department.Staffs {
+			staffIDs = append(staffIDs, staff.ID)
+		}
+
+		serviceNotificationMsg := types.ServiceNotificationMessage{
+			Content:     notification.Content,
+			Type:        notification.Type,
+			ContentID:   notification.ContentID,
+			Receiver:    notification.Receiver,
+			Department:  &orderService.Service.ServiceType.Department.Name,
+			ReceiverIDs: staffIDs,
+		}
+
+		go func(msg types.ServiceNotificationMessage) {
+			body, _ := json.Marshal(msg)
+			if err := s.mqProvider.PublishMessage(common.ExchangeNotification, common.RoutingKeyServiceNotification, body); err != nil {
+				s.logger.Error("publish service notification message failed", zap.Error(err))
+			}
+		}(serviceNotificationMsg)
+
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	return nil
 }

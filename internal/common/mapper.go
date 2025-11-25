@@ -205,6 +205,7 @@ func ToSimpleServiceTypeResponse(serviceType *model.ServiceType) *types.SimpleSe
 	return &types.SimpleServiceTypeResponse{
 		ID:   serviceType.ID,
 		Name: serviceType.Name,
+		Slug: serviceType.Slug,
 	}
 }
 

@@ -7,6 +7,7 @@ import (
 	"github.com/InstaySystem/is-be/internal/model"
 	"github.com/InstaySystem/is-be/internal/repository"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type orderRepoImpl struct {
@@ -47,4 +48,23 @@ func (r *orderRepoImpl) FindOrderRoomByIDWithDetails(ctx context.Context, orderR
 	}
 
 	return &orderRoom, nil
+}
+
+func (r *orderRepoImpl) FindOrderServiceByIDWithServiceDetailsTx(ctx context.Context, tx *gorm.DB, orderServiceID int64) (*model.OrderService, error) {
+	var orderService model.OrderService
+	if err := tx.WithContext(ctx).Clauses(clause.Locking{
+		Strength: clause.LockingStrengthUpdate,
+		Options:  clause.LockingOptionsNoWait,
+	}).Preload("Service.ServiceType.Department.Staffs").Where("id = ?", orderServiceID).First(&orderService).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &orderService, nil
+}
+
+func (r *orderRepoImpl) UpdateOrderServiceTx(ctx context.Context, tx *gorm.DB, orderServiceID int64, updateData map[string]any) error {
+	return tx.WithContext(ctx).Model(&model.OrderService{}).Where("id = ?", orderServiceID).Updates(updateData).Error
 }

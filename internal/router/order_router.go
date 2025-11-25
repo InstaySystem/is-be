@@ -19,5 +19,7 @@ func OrderRouter(rg *gin.RouterGroup, hdl *handler.OrderHandler, authMid *middle
 	guest := rg.Group("/orders", authMid.HasGuestToken())
 	{
 		guest.POST("/services", hdl.CreateOrderService)
+
+		guest.DELETE("/services/:id", hdl.CancelOrderService)
 	}
 }

@@ -31,6 +31,8 @@ var (
 
 	ErrProtectedRecord = errors.New("record related to other records, cannot be deleted")
 
+	ErrLockedRecord = errors.New("the record is being updated")
+
 	ErrNeedAdmin = errors.New("need 1 active administrator")
 
 	ErrDepartmentAlreadyExists = errors.New("department already exists")
@@ -72,4 +74,8 @@ var (
 	ErrBookingExpired = errors.New("booking expired")
 
 	ErrOrderRoomDuplicate = errors.New("order room duplicate")
+
+	ErrOrderServiceNotFound = errors.New("order service not found")
+
+	ErrInvalidStatus = errors.New("invalid status")
 )

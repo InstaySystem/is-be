@@ -16,4 +16,6 @@ type OrderService interface {
 	VerifyOrderRoom(ctx context.Context, secretCode string) (string, time.Duration, error)
 
 	CreateOrderService(ctx context.Context, orderRoomID int64, req types.CreateOrderServiceRequest) (int64, error)
+
+	CancelOrderService(ctx context.Context, orderRoomID, orderServiceID int64) error
 }
