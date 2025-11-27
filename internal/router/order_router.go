@@ -7,28 +7,30 @@ import (
 )
 
 func OrderRouter(rg *gin.RouterGroup, hdl *handler.OrderHandler, authMid *middleware.AuthMiddleware) {
-	admin := rg.Group("/admin", authMid.IsAuthentication(), authMid.HasDepartment("reception"))
+	admin := rg.Group("/admin/orders/rooms", authMid.IsAuthentication(), authMid.HasDepartment("reception"))
 	{
-		admin.POST("/orders/rooms", hdl.CreateOrderRoom)
+		admin.POST("", hdl.CreateOrderRoom)
 
-		admin.GET("/orders/rooms/:id", hdl.GetOrderRoomByID)
+		admin.GET("/:id", hdl.GetOrderRoomByID)
 	}
 
-	admin = rg.Group("/admin", authMid.IsAuthentication())
+	admin = rg.Group("/admin/orders/services", authMid.IsAuthentication())
 	{
-		admin.GET("/orders/services", hdl.GetOrderServicesForAdmin)
+		admin.GET("", hdl.GetOrderServicesForAdmin)
 
-		admin.GET("/orders/services/:id", hdl.GetOrderServiceByID)
+		admin.GET("/:id", hdl.GetOrderServiceByID)
+
+		// admin.PUT("/:id", hdl.UpdateOrderServiceForAdmin)
 	}
 
 	rg.POST("/orders/rooms/verify", hdl.VerifyOrderRoom)
 
-	guest := rg.Group("/orders", authMid.HasGuestToken())
+	guest := rg.Group("/orders/services", authMid.HasGuestToken())
 	{
-		guest.POST("/services", hdl.CreateOrderService)
+		guest.POST("", hdl.CreateOrderService)
 
-		guest.GET("/services/:code", hdl.GetOrderServiceByCode)
+		guest.GET("/:code", hdl.GetOrderServiceByCode)
 
-		guest.PUT("/services/:id", hdl.UpdateOrderServiceForGuest)
+		guest.PUT("/:id", hdl.UpdateOrderServiceForGuest)
 	}
 }

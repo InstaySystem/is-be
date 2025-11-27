@@ -2,6 +2,7 @@ package implement
 
 import (
 	"context"
+	"time"
 
 	"github.com/InstaySystem/is-be/internal/model"
 	"github.com/InstaySystem/is-be/internal/repository"
@@ -30,9 +31,9 @@ func NewNotificationService(
 }
 
 func (s *notificationSvcImpl) GetNotificationsForAdmin(ctx context.Context, query types.NotificationPaginationQuery, userID, departmentID int64) ([]*model.Notification, *types.MetaResponse, error) {
-	unreadNotifications, err := s.notificationRepo.FindAllUnReadNotificationsByDepartmentID(ctx, userID, departmentID)
+	unreadNotifications, err := s.notificationRepo.FindAllUnreadNotificationsByDepartmentID(ctx, userID, departmentID)
 	if err != nil {
-		s.logger.Error("find unread notifications failed", zap.Error(err))
+		s.logger.Error("find unread notifications by department ID failed", zap.Error(err))
 		return nil, nil, err
 	}
 
@@ -67,7 +68,7 @@ func (s *notificationSvcImpl) GetNotificationsForAdmin(ctx context.Context, quer
 
 	notifications, total, err := s.notificationRepo.FindAllNotificationsByDepartmentIDWithStaffsReadPaginated(ctx, query, userID, departmentID)
 	if err != nil {
-		s.logger.Error("find all notifications paginated failed", zap.Error(err))
+		s.logger.Error("find all notifications by department ID paginated failed", zap.Error(err))
 		return nil, nil, err
 	}
 
@@ -89,9 +90,51 @@ func (s *notificationSvcImpl) GetNotificationsForAdmin(ctx context.Context, quer
 }
 
 func (s *notificationSvcImpl) CountUnreadNotificationsForAdmin(ctx context.Context, userID, departmentID int64) (int64, error) {
-	count, err := s.notificationRepo.CountUnReadNotificationsByDepartmentID(ctx, userID, departmentID)
+	count, err := s.notificationRepo.CountUnreadNotificationsByDepartmentID(ctx, userID, departmentID)
 	if err != nil {
-		s.logger.Error("count unread notifications failed", zap.Error(err))
+		s.logger.Error("count unread notifications by department ID failed", zap.Error(err))
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (s *notificationSvcImpl) GetNotificationsForGuest(ctx context.Context, orderRoomID int64) ([]*model.Notification, error) {
+	unreadNotifications, err := s.notificationRepo.FindAllUnreadNotificationsByOrderRoomID(ctx, orderRoomID)
+	if err != nil {
+		s.logger.Error("find unread notifications by order room ID failed", zap.Error(err))
+		return nil, err
+	}
+
+	if len(unreadNotifications) > 0 {
+		notificationIDs := []int64{}
+		for _, notification := range unreadNotifications {
+			notificationIDs = append(notificationIDs, notification.ID)
+		}
+
+		updateData := map[string]any{
+			"is_read": true,
+			"read_at": time.Now(),
+		}
+		if err = s.notificationRepo.UpdateNotifications(ctx, notificationIDs, updateData); err != nil {
+			s.logger.Error("update notifications failed", zap.Error(err))
+			return nil, err
+		}
+	}
+
+	notifications, err := s.notificationRepo.FindAllNotificationsByOrderRoomID(ctx, orderRoomID)
+	if err != nil {
+		s.logger.Error("find all notifications by order room ID failed", zap.Error(err))
+		return nil, err
+	}
+
+	return notifications, nil
+}
+
+func (s *notificationSvcImpl) CountUnreadNotificationsForGuest(ctx context.Context, orderRoomID int64) (int64, error) {
+	count, err := s.notificationRepo.CountUnreadNotificationsByOrderRoomID(ctx, orderRoomID)
+	if err != nil {
+		s.logger.Error("count unread notifications by order room ID failed", zap.Error(err))
 		return 0, err
 	}
 

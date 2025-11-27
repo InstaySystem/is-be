@@ -314,3 +314,48 @@ func (h *OrderHandler) GetOrderServiceByID(c *gin.Context) {
 		"order_service": common.ToOrderServiceResponse(orderService),
 	})
 }
+
+// func (h *OrderHandler) UpdateOrderServiceForAdmin(c *gin.Context) {
+// 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+// 	defer cancel()
+
+// 	orderServiceIDStr := c.Param("id")
+// 	orderServiceID, err := strconv.ParseInt(orderServiceIDStr, 10, 64)
+// 	if err != nil {
+// 		common.ToAPIResponse(c, http.StatusBadRequest, common.ErrInvalidID.Error(), nil)
+// 		return
+// 	}
+
+// 	userAny, exists := c.Get("user")
+// 	if !exists {
+// 		common.ToAPIResponse(c, http.StatusUnauthorized, common.ErrUnAuth.Error(), nil)
+// 		return
+// 	}
+
+// 	user, ok := userAny.(*types.UserData)
+// 	if !ok {
+// 		common.ToAPIResponse(c, http.StatusUnauthorized, common.ErrInvalidUser.Error(), nil)
+// 		return
+// 	}
+
+// 	var req types.UpdateOrderServiceRequest
+// 	if err := c.ShouldBindJSON(&req); err != nil {
+// 		mess := common.HandleValidationError(err)
+// 		common.ToAPIResponse(c, http.StatusBadRequest, mess, nil)
+// 		return
+// 	}
+
+// 	if err = h.orderSvc.UpdateOrderServiceForAdmin(ctx, user.ID, orderServiceID, req.Status); err != nil {
+// 		switch err {
+// 		case common.ErrOrderServiceNotFound:
+// 			common.ToAPIResponse(c, http.StatusNotFound, err.Error(), nil)
+// 		case common.ErrOrderRoomNotFound, common.ErrInvalidStatus:
+// 			common.ToAPIResponse(c, http.StatusForbidden, err.Error(), nil)
+// 		default:
+// 			common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
+// 		}
+// 		return
+// 	}
+
+// 	common.ToAPIResponse(c, http.StatusOK, "Order service updated successfully", nil)
+// }

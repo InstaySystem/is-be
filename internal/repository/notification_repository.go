@@ -11,15 +11,23 @@ import (
 type Notification interface {
 	CreateNotificationTx(ctx context.Context, tx *gorm.DB, notification *model.Notification) error
 
-	UpdateReadNotificationsByContentIDAndTypeAndReceiver(ctx context.Context, contentID int64, contentType, receiver string, updateData map[string]any) error
+	UpdateNotificationsByContentIDAndTypeAndReceiver(ctx context.Context, contentID int64, contentType, receiver string, updateData map[string]any) error
 
-	FindAllUnReadNotificationsByContentIDAndTypeAndReceiver(ctx context.Context, staffID, contentID int64, contentType, receiver string) ([]*model.Notification, error)
+	FindAllUnreadNotificationsByContentIDAndTypeAndReceiver(ctx context.Context, staffID, contentID int64, contentType, receiver string) ([]*model.Notification, error)
 
 	CreateNotificationStaffs(ctx context.Context, notificationStaffs []*model.NotificationStaff) error
 
-	FindAllUnReadNotificationsByDepartmentID(ctx context.Context, staffID, departmentID int64) ([]*model.Notification, error)
+	FindAllUnreadNotificationsByDepartmentID(ctx context.Context, staffID, departmentID int64) ([]*model.Notification, error)
 
-	CountUnReadNotificationsByDepartmentID(ctx context.Context, userID, departmentID int64) (int64, error)
+	FindAllUnreadNotificationsByOrderRoomID(ctx context.Context, orderRoomID int64) ([]*model.Notification, error)
+
+	FindAllNotificationsByOrderRoomID(ctx context.Context, orderRoomID int64) ([]*model.Notification, error)
+
+	CountUnreadNotificationsByDepartmentID(ctx context.Context, userID, departmentID int64) (int64, error)
+
+	CountUnreadNotificationsByOrderRoomID(ctx context.Context, orderRoomID int64) (int64, error)
+
+	UpdateNotifications(ctx context.Context, notificationIDs []int64, updateData map[string]any) error
 
 	FindAllNotificationsByDepartmentIDWithStaffsReadPaginated(ctx context.Context, query types.NotificationPaginationQuery, staffID, departmentID int64) ([]*model.Notification, int64, error)
 }

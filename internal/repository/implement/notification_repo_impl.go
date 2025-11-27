@@ -25,11 +25,15 @@ func (r *notificationRepoImpl) CreateNotificationStaffs(ctx context.Context, not
 	return r.db.WithContext(ctx).Create(notificationStaffs).Error
 }
 
-func (r *notificationRepoImpl) UpdateReadNotificationsByContentIDAndTypeAndReceiver(ctx context.Context, contentID int64, contentType, receiver string, updateData map[string]any) error {
+func (r *notificationRepoImpl) UpdateNotificationsByContentIDAndTypeAndReceiver(ctx context.Context, contentID int64, contentType, receiver string, updateData map[string]any) error {
 	return r.db.WithContext(ctx).Model(&model.Notification{}).Where("content_id = ? AND type = ? AND receiver = ? AND is_read = false", contentID, contentType, receiver).Updates(updateData).Error
 }
 
-func (r *notificationRepoImpl) FindAllUnReadNotificationsByContentIDAndTypeAndReceiver(ctx context.Context, staffID, contentID int64, contentType, receiver string) ([]*model.Notification, error) {
+func (r *notificationRepoImpl) UpdateNotifications(ctx context.Context, notificationIDs []int64, updateData map[string]any) error {
+	return r.db.WithContext(ctx).Model(&model.Notification{}).Where("id IN ?", notificationIDs).Updates(updateData).Error
+}
+
+func (r *notificationRepoImpl) FindAllUnreadNotificationsByContentIDAndTypeAndReceiver(ctx context.Context, staffID, contentID int64, contentType, receiver string) ([]*model.Notification, error) {
 	var notifications []*model.Notification
 	if err := r.db.WithContext(ctx).Where("content_id = ? AND type = ? AND receiver = ?", contentID, contentType, receiver).Where("id NOT IN (?)",
 		r.db.Model(&model.NotificationStaff{}).
@@ -42,7 +46,25 @@ func (r *notificationRepoImpl) FindAllUnReadNotificationsByContentIDAndTypeAndRe
 	return notifications, nil
 }
 
-func (r *notificationRepoImpl) FindAllUnReadNotificationsByDepartmentID(ctx context.Context, staffID, departmentID int64) ([]*model.Notification, error) {
+func (r *notificationRepoImpl) FindAllNotificationsByOrderRoomID(ctx context.Context, orderRoomID int64) ([]*model.Notification, error) {
+	var notifications []*model.Notification
+	if err := r.db.WithContext(ctx).Where("order_room_id = ? AND receiver = ?", orderRoomID, "guest").Order("created_at DESC").Find(&notifications).Error; err != nil {
+		return nil, err
+	}
+
+	return notifications, nil
+}
+
+func (r *notificationRepoImpl) FindAllUnreadNotificationsByOrderRoomID(ctx context.Context, orderRoomID int64) ([]*model.Notification, error) {
+	var notifications []*model.Notification
+	if err := r.db.WithContext(ctx).Where("order_room_id = ? AND receiver = ? AND is_read = false", orderRoomID, "guest").Find(&notifications).Error; err != nil {
+		return nil, err
+	}
+
+	return notifications, nil
+}
+
+func (r *notificationRepoImpl) FindAllUnreadNotificationsByDepartmentID(ctx context.Context, staffID, departmentID int64) ([]*model.Notification, error) {
 	var notifications []*model.Notification
 	if err := r.db.WithContext(ctx).Where("department_id = ? AND receiver = ?", departmentID, "staff").Where("id NOT IN (?)",
 		r.db.Model(&model.NotificationStaff{}).
@@ -55,7 +77,7 @@ func (r *notificationRepoImpl) FindAllUnReadNotificationsByDepartmentID(ctx cont
 	return notifications, nil
 }
 
-func (r *notificationRepoImpl) CountUnReadNotificationsByDepartmentID(ctx context.Context, userID, departmentID int64) (int64, error) {
+func (r *notificationRepoImpl) CountUnreadNotificationsByDepartmentID(ctx context.Context, userID, departmentID int64) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).Model(&model.Notification{}).Where("department_id = ? AND receiver = ?", departmentID, "staff").
 		Where("id NOT IN (?)",
@@ -63,6 +85,15 @@ func (r *notificationRepoImpl) CountUnReadNotificationsByDepartmentID(ctx contex
 				Select("notification_id").
 				Where("staff_id = ?", userID),
 		).Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (r *notificationRepoImpl) CountUnreadNotificationsByOrderRoomID(ctx context.Context, orderRoomID int64) (int64, error) {
+	var count int64
+	if err := r.db.WithContext(ctx).Model(&model.Notification{}).Where("order_room_id = ? AND receiver = ?", orderRoomID, "guest").Count(&count).Error; err != nil {
 		return 0, err
 	}
 

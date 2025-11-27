@@ -263,7 +263,7 @@ func (s *orderSvcImpl) GetOrderServiceByCode(ctx context.Context, orderRoomID in
 		"read_at": time.Now(),
 		"is_read": true,
 	}
-	if err = s.notificationRepo.UpdateReadNotificationsByContentIDAndTypeAndReceiver(ctx, orderService.ID, "service", "guest", updateData); err != nil {
+	if err = s.notificationRepo.UpdateNotificationsByContentIDAndTypeAndReceiver(ctx, orderService.ID, "service", "guest", updateData); err != nil {
 		s.logger.Error("update read service notification failed", zap.Int64("id", orderService.ID), zap.Error(err))
 		return nil, err
 	}
@@ -284,7 +284,7 @@ func (s *orderSvcImpl) GetOrderServiceByID(ctx context.Context, userID int64, or
 		return nil, common.ErrOrderServiceNotFound
 	}
 
-	unreadNotifications, err := s.notificationRepo.FindAllUnReadNotificationsByContentIDAndTypeAndReceiver(ctx, userID, orderServiceID, "service", "staff")
+	unreadNotifications, err := s.notificationRepo.FindAllUnreadNotificationsByContentIDAndTypeAndReceiver(ctx, userID, orderServiceID, "service", "staff")
 	if err != nil {
 		s.logger.Error("find unread notifications failed", zap.Error(err))
 		return nil, err

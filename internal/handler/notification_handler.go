@@ -95,3 +95,45 @@ func (h *NotificationHandler) CountUnreadNotificationsForAdmin(c *gin.Context) {
 		"count": count,
 	})
 }
+
+func (h *NotificationHandler) GetNotificationsForGuest(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	orderRoomID := c.GetInt64("order_room_id")
+	if orderRoomID == 0 {
+		common.ToAPIResponse(c, http.StatusForbidden, common.ErrForbidden.Error(), nil)
+		return
+	}
+
+	notifications, err := h.notificationSvc.GetNotificationsForGuest(ctx, orderRoomID)
+	if err != nil {
+		common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
+		return
+	}
+
+	common.ToAPIResponse(c, http.StatusOK, "Get notification list successfully", gin.H{
+		"notifications": common.ToSimpleNotificationsResponse(notifications),
+	})
+}
+
+func (h *NotificationHandler) CountUnreadNotificationsForGuest(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	orderRoomID := c.GetInt64("order_room_id")
+	if orderRoomID == 0 {
+		common.ToAPIResponse(c, http.StatusForbidden, common.ErrForbidden.Error(), nil)
+		return
+	}
+
+	count, err := h.notificationSvc.CountUnreadNotificationsForGuest(ctx, orderRoomID)
+	if err != nil {
+		common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
+		return
+	}
+
+	common.ToAPIResponse(c, http.StatusOK, "Count unread notification successfully", gin.H{
+		"count": count,
+	})
+}

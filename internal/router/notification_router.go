@@ -7,10 +7,17 @@ import (
 )
 
 func NotificationRouter(rg *gin.RouterGroup, hdl *handler.NotificationHandler, authMid *middleware.AuthMiddleware) {
-	admin := rg.Group("/admin", authMid.IsAuthentication())
+	admin := rg.Group("/admin/notifications", authMid.IsAuthentication())
 	{
-		admin.GET("/notifications", hdl.GetNotificationsForAdmin)
+		admin.GET("", hdl.GetNotificationsForAdmin)
 
-		admin.GET("/notifications/unread-count", hdl.CountUnreadNotificationsForAdmin)
+		admin.GET("/unread-count", hdl.CountUnreadNotificationsForAdmin)
+	}
+
+	guest := rg.Group("/notifications", authMid.HasGuestToken())
+	{
+		guest.GET("", hdl.GetNotificationsForGuest)
+
+		guest.GET("/unread-count", hdl.CountUnreadNotificationsForGuest)
 	}
 }
