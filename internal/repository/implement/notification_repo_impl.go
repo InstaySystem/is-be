@@ -25,10 +25,6 @@ func (r *notificationRepoImpl) CreateNotificationStaffs(ctx context.Context, not
 	return r.db.WithContext(ctx).Create(notificationStaffs).Error
 }
 
-func (r *notificationRepoImpl) UpdateNotificationsByContentIDAndTypeAndReceiver(ctx context.Context, contentID int64, contentType, receiver string, updateData map[string]any) error {
-	return r.db.WithContext(ctx).Model(&model.Notification{}).Where("content_id = ? AND type = ? AND receiver = ? AND is_read = false", contentID, contentType, receiver).Updates(updateData).Error
-}
-
 func (r *notificationRepoImpl) UpdateNotifications(ctx context.Context, notificationIDs []int64, updateData map[string]any) error {
 	return r.db.WithContext(ctx).Model(&model.Notification{}).Where("id IN ?", notificationIDs).Updates(updateData).Error
 }
@@ -98,6 +94,10 @@ func (r *notificationRepoImpl) CountUnreadNotificationsByOrderRoomID(ctx context
 	}
 
 	return count, nil
+}
+
+func (r *notificationRepoImpl) UpdateNotificationsByOrderRoomIDAndType(ctx context.Context, orderRoomID int64, contentType string, updateData map[string]any) error {
+	return r.db.WithContext(ctx).Model(&model.Notification{}).Where("order_room_id = ? AND type = ? AND receiver = ?", orderRoomID, contentType, "guest").Updates(updateData).Error
 }
 
 func (r *notificationRepoImpl) FindAllNotificationsByDepartmentIDWithStaffsReadPaginated(ctx context.Context, query types.NotificationPaginationQuery, staffID, departmentID int64) ([]*model.Notification, int64, error) {

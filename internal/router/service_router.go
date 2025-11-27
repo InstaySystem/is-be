@@ -11,21 +11,24 @@ func ServiceRouter(rg *gin.RouterGroup, hdl *handler.ServiceHandler, authMid *mi
 	{
 		admin.POST("/service-types", hdl.CreateServiceType)
 
-		admin.GET("/service-types", hdl.GetServiceTypesForAdmin)
-
 		admin.PATCH("/service-types/:id", hdl.UpdateServiceType)
 
 		admin.DELETE("/service-types/:id", hdl.DeleteServiceType)
 
 		admin.POST("/services", hdl.CreateService)
 
+		admin.PATCH("/services/:id", hdl.UpdateService)
+
+		admin.DELETE("/services/:id", hdl.DeleteService)
+	}
+
+	admin = rg.Group("/admin", authMid.IsAuthentication(), authMid.HasDepartment("reception"))
+	{
 		admin.GET("/services", hdl.GetServicesForAdmin)
 
 		admin.GET("/services/:id", hdl.GetServiceByID)
 
-		admin.PATCH("/services/:id", hdl.UpdateService)
-
-		admin.DELETE("/services/:id", hdl.DeleteService)
+		admin.GET("/service-types", hdl.GetServiceTypesForAdmin)
 	}
 
 	rg.GET("/service-types", hdl.GetServiceTypesForGuest)

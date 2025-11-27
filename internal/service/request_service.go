@@ -20,8 +20,6 @@ type RequestService interface {
 
 	CreateRequest(ctx context.Context, orderRoomID int64, req types.CreateRequestRequest) (int64, error)
 
-	GetRequestByCode(ctx context.Context, orderRoomID int64, requestCode string) (*model.Request, error)
-
 	UpdateRequestForGuest(ctx context.Context, orderRoomID, requestID int64, req types.UpdateRequestRequest) error
 
 	GetRequestsForGuest(ctx context.Context, orderRoomID int64) ([]*model.Request, error)

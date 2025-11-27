@@ -19,11 +19,14 @@ func RoomRouter(rg *gin.RouterGroup, hdl *handler.RoomHandler, authMid *middlewa
 
 		admin.POST("/rooms", hdl.CreateRoom)
 
-		admin.GET("/rooms", hdl.GetRooms)
-
 		admin.PATCH("/rooms/:id", hdl.UpdateRoom)
 
 		admin.DELETE("/rooms/:id", hdl.DeleteRoom)
+	}
+
+	admin = rg.Group("/admin", authMid.IsAuthentication(), authMid.HasDepartment("reception"))
+	{
+		admin.GET("/rooms", hdl.GetRooms)
 
 		admin.GET("/floors", hdl.GetFloors)
 	}

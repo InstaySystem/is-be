@@ -238,28 +238,6 @@ func (s *requestSvcImpl) CreateRequest(ctx context.Context, orderRoomID int64, r
 	return requestID, nil
 }
 
-func (s *requestSvcImpl) GetRequestByCode(ctx context.Context, orderRoomID int64, requestCode string) (*model.Request, error) {
-	request, err := s.requestRepo.FindRequestByCodeWithRequestType(ctx, requestCode)
-	if err != nil {
-		s.logger.Error("find request by code failed", zap.String("code", requestCode), zap.Error(err))
-		return nil, err
-	}
-	if request == nil || request.OrderRoomID != orderRoomID {
-		return nil, common.ErrRequestNotFound
-	}
-
-	updateData := map[string]any{
-		"read_at": time.Now(),
-		"is_read": true,
-	}
-	if err = s.notificationRepo.UpdateNotificationsByContentIDAndTypeAndReceiver(ctx, request.ID, "request", "guest", updateData); err != nil {
-		s.logger.Error("update read request notification failed", zap.Int64("id", request.ID), zap.Error(err))
-		return nil, err
-	}
-
-	return request, nil
-}
-
 func (s *requestSvcImpl) UpdateRequestForGuest(ctx context.Context, orderRoomID, requestID int64, req types.UpdateRequestRequest) error {
 	orderRoom, err := s.orderRepo.FindOrderRoomByIDWithRoom(ctx, orderRoomID)
 	if err != nil {
@@ -347,6 +325,15 @@ func (s *requestSvcImpl) GetRequestsForGuest(ctx context.Context, orderRoomID in
 	requests, err := s.requestRepo.FindAllRequestsByOrderRoomIDWithDetails(ctx, orderRoomID)
 	if err != nil {
 		s.logger.Error("find all requests by order room id failed", zap.Error(err))
+		return nil, err
+	}
+
+	updateData := map[string]any{
+		"read_at": time.Now(),
+		"is_read": true,
+	}
+	if err = s.notificationRepo.UpdateNotificationsByOrderRoomIDAndType(ctx, orderRoomID, "request", updateData); err != nil {
+		s.logger.Error("update read request notification failed", zap.Error(err))
 		return nil, err
 	}
 

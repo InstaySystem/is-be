@@ -507,5 +507,14 @@ func (s *orderSvcImpl) GetOrderServicesForGuest(ctx context.Context, orderRoomID
 		return nil, err
 	}
 
+	updateData := map[string]any{
+		"read_at": time.Now(),
+		"is_read": true,
+	}
+	if err = s.notificationRepo.UpdateNotificationsByOrderRoomIDAndType(ctx, orderRoomID, "service", updateData); err != nil {
+		s.logger.Error("update read service notification failed", zap.Error(err))
+		return nil, err
+	}
+
 	return orderServices, nil
 }

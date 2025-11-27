@@ -193,34 +193,6 @@ func (h *RequestHandler) CreateRequest(c *gin.Context) {
 	})
 }
 
-func (h *RequestHandler) GetRequestByCode(c *gin.Context) {
-	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
-	defer cancel()
-
-	requestCode := c.Param("code")
-
-	orderRoomID := c.GetInt64("order_room_id")
-	if orderRoomID == 0 {
-		common.ToAPIResponse(c, http.StatusForbidden, common.ErrForbidden.Error(), nil)
-		return
-	}
-
-	request, err := h.requestSvc.GetRequestByCode(ctx, orderRoomID, requestCode)
-	if err != nil {
-		switch err {
-		case common.ErrRequestNotFound:
-			common.ToAPIResponse(c, http.StatusNotFound, err.Error(), nil)
-		default:
-			common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
-		}
-		return
-	}
-
-	common.ToAPIResponse(c, http.StatusOK, "Get request information successful", gin.H{
-		"request": common.ToSimpleRequestResponse(request),
-	})
-}
-
 func (h *RequestHandler) UpdateRequestForGuest(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
