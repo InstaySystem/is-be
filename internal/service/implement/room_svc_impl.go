@@ -34,7 +34,7 @@ func NewRoomService(
 func (s *roomSvcImpl) CreateRoomType(ctx context.Context, userID int64, req types.CreateRoomTypeRequest) error {
 	id, err := s.sfGen.NextID()
 	if err != nil {
-		s.logger.Error("generate room type ID failed", zap.Error(err))
+		s.logger.Error("generate room type id failed", zap.Error(err))
 		return err
 	}
 
@@ -75,7 +75,7 @@ func (s *roomSvcImpl) GetRoomTypes(ctx context.Context) ([]*model.RoomType, erro
 
 	roomCounts, err := s.roomRepo.CountRoomByRoomTypeID(ctx, roomTypeIDs)
 	if err != nil {
-		s.logger.Error("count room by room type ID failed", zap.Error(err))
+		s.logger.Error("count room by room type id failed", zap.Error(err))
 		return nil, err
 	}
 
@@ -135,7 +135,7 @@ func (s *roomSvcImpl) DeleteRoomType(ctx context.Context, roomTypeID int64) erro
 func (s *roomSvcImpl) CreateRoom(ctx context.Context, userID int64, req types.CreateRoomRequest) error {
 	roomID, err := s.sfGen.NextID()
 	if err != nil {
-		s.logger.Error("generate room ID failed", zap.Error(err))
+		s.logger.Error("generate room id failed", zap.Error(err))
 		return err
 	}
 
@@ -147,7 +147,7 @@ func (s *roomSvcImpl) CreateRoom(ctx context.Context, userID int64, req types.Cr
 	if floor == nil {
 		floorID, err := s.sfGen.NextID()
 		if err != nil {
-			s.logger.Error("generate floor ID failed", zap.Error(err))
+			s.logger.Error("generate floor id failed", zap.Error(err))
 			return err
 		}
 
@@ -220,7 +220,7 @@ func (s *roomSvcImpl) GetRooms(ctx context.Context, query types.RoomPaginationQu
 func (s *roomSvcImpl) UpdateRoom(ctx context.Context, roomID, userID int64, req types.UpdateRoomRequest) error {
 	room, err := s.roomRepo.FindRoomByIDWithFloor(ctx, roomID)
 	if err != nil {
-		s.logger.Error("find room by ID failed", zap.Int64("id", roomID), zap.Error(err))
+		s.logger.Error("find room by id failed", zap.Int64("id", roomID), zap.Error(err))
 		return err
 	}
 	if room == nil {
@@ -245,7 +245,7 @@ func (s *roomSvcImpl) UpdateRoom(ctx context.Context, roomID, userID int64, req 
 		if floor == nil {
 			floorID, err := s.sfGen.NextID()
 			if err != nil {
-				s.logger.Error("generate floor ID failed", zap.Error(err))
+				s.logger.Error("generate floor id failed", zap.Error(err))
 				return err
 			}
 

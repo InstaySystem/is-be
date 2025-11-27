@@ -95,7 +95,7 @@ func (w *MQWorker) startDeleteFile() {
 
 func (w *MQWorker) startSendServiceNotification() {
 	if err := w.mq.ConsumeMessage(common.QueueNameServiceNotification, common.ExchangeNotification, common.RoutingKeyServiceNotification, func(body []byte) error {
-		var serviceNotificationMsg types.ServiceNotificationMessage
+		var serviceNotificationMsg types.NotificationMessage
 		if err := json.Unmarshal(body, &serviceNotificationMsg); err != nil {
 			return err
 		}

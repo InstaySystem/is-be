@@ -63,7 +63,7 @@ func NewOrderService(
 func (s *orderSvcImpl) CreateOrderRoom(ctx context.Context, userID int64, req types.CreateOrderRoomRequest) (int64, string, error) {
 	booking, err := s.bookingRepo.FindByID(ctx, req.BookingID)
 	if err != nil {
-		s.logger.Error("find booking by ID failed", zap.Int64("id", req.BookingID), zap.Error(err))
+		s.logger.Error("find booking by id failed", zap.Int64("id", req.BookingID), zap.Error(err))
 		return 0, "", err
 	}
 
@@ -73,7 +73,7 @@ func (s *orderSvcImpl) CreateOrderRoom(ctx context.Context, userID int64, req ty
 
 	id, err := s.sfGen.NextID()
 	if err != nil {
-		s.logger.Error("generate order room ID failed", zap.Error(err))
+		s.logger.Error("generate order room id failed", zap.Error(err))
 		return 0, "", err
 	}
 
@@ -176,7 +176,7 @@ func (s *orderSvcImpl) CreateOrderService(ctx context.Context, orderRoomID int64
 
 	orderServiceID, err := s.sfGen.NextID()
 	if err != nil {
-		s.logger.Error("generate order service ID failed", zap.Error(err))
+		s.logger.Error("generate order service id failed", zap.Error(err))
 		return 0, err
 	}
 
@@ -191,61 +191,59 @@ func (s *orderSvcImpl) CreateOrderService(ctx context.Context, orderRoomID int64
 		GuestNote:   req.GuestNote,
 	}
 
-	notificationID, err := s.sfGen.NextID()
-	if err != nil {
-		s.logger.Error("generate notification ID failed", zap.Error(err))
-		return 0, err
-	}
-
-	content := fmt.Sprintf("Phòng %s yêu cầu %d %s", orderRoom.Room.Name, req.Quantity, service.Name)
-	notification := &model.Notification{
-		ID:           notificationID,
-		DepartmentID: service.ServiceType.DepartmentID,
-		OrderRoomID:  orderRoomID,
-		Type:         "service",
-		Receiver:     "staff",
-		Content:      content,
-		ContentID:    orderService.ID,
-	}
-
 	if err = s.db.Transaction(func(tx *gorm.DB) error {
 		if err = s.orderRepo.CreateOrderServiceTx(ctx, tx, orderService); err != nil {
-			if ok, _ := common.IsUniqueViolation(err); ok {
-				return common.ErrOrderServiceCodeAlreadyExists
-			}
 			s.logger.Error("create order service failed", zap.Error(err))
 			return err
+		}
+
+		notificationID, err := s.sfGen.NextID()
+		if err != nil {
+			s.logger.Error("generate notification id failed", zap.Error(err))
+			return err
+		}
+
+		content := fmt.Sprintf("Phòng %s đã đặt %d %s", orderRoom.Room.Name, req.Quantity, service.Name)
+		notification := &model.Notification{
+			ID:           notificationID,
+			DepartmentID: service.ServiceType.DepartmentID,
+			OrderRoomID:  orderRoomID,
+			Type:         "service",
+			Receiver:     "staff",
+			Content:      content,
+			ContentID:    orderService.ID,
 		}
 
 		if err = s.notificationRepo.CreateNotificationTx(ctx, tx, notification); err != nil {
 			s.logger.Error("create notification failed", zap.Error(err))
 			return err
 		}
+
+		staffIDs := make([]int64, 0, len(service.ServiceType.Department.Staffs))
+		for _, staff := range service.ServiceType.Department.Staffs {
+			staffIDs = append(staffIDs, staff.ID)
+		}
+
+		serviceNotificationMsg := types.NotificationMessage{
+			Content:     notification.Content,
+			Type:        notification.Type,
+			ContentID:   notification.ContentID,
+			Receiver:    notification.Receiver,
+			Department:  &service.ServiceType.Department.Name,
+			ReceiverIDs: staffIDs,
+		}
+
+		go func(msg types.NotificationMessage) {
+			body, _ := json.Marshal(msg)
+			if err := s.mqProvider.PublishMessage(common.ExchangeNotification, common.RoutingKeyServiceNotification, body); err != nil {
+				s.logger.Error("publish service notification message failed", zap.Error(err))
+			}
+		}(serviceNotificationMsg)
+
 		return nil
 	}); err != nil {
 		return 0, err
 	}
-
-	staffIDs := make([]int64, 0, len(service.ServiceType.Department.Staffs))
-	for _, staff := range service.ServiceType.Department.Staffs {
-		staffIDs = append(staffIDs, staff.ID)
-	}
-
-	serviceNotificationMsg := types.ServiceNotificationMessage{
-		Content:     notification.Content,
-		Type:        notification.Type,
-		ContentID:   notification.ContentID,
-		Receiver:    notification.Receiver,
-		Department:  &service.ServiceType.Department.Name,
-		ReceiverIDs: staffIDs,
-	}
-
-	go func(msg types.ServiceNotificationMessage) {
-		body, _ := json.Marshal(msg)
-		if err := s.mqProvider.PublishMessage(common.ExchangeNotification, common.RoutingKeyServiceNotification, body); err != nil {
-			s.logger.Error("publish service notification message failed", zap.Error(err))
-		}
-	}(serviceNotificationMsg)
 
 	return orderServiceID, nil
 }
@@ -296,7 +294,7 @@ func (s *orderSvcImpl) GetOrderServiceByID(ctx context.Context, userID int64, or
 		for _, notification := range unreadNotifications {
 			id, err := s.sfGen.NextID()
 			if err != nil {
-				s.logger.Error("generate notification staff ID failed", zap.Error(err))
+				s.logger.Error("generate notification staff id failed", zap.Error(err))
 				return nil, err
 			}
 
@@ -354,7 +352,7 @@ func (s *orderSvcImpl) UpdateOrderServiceForGuest(ctx context.Context, orderRoom
 
 		notificationID, err := s.sfGen.NextID()
 		if err != nil {
-			s.logger.Error("generate notification ID failed", zap.Error(err))
+			s.logger.Error("generate notification id failed", zap.Error(err))
 			return err
 		}
 
@@ -379,7 +377,7 @@ func (s *orderSvcImpl) UpdateOrderServiceForGuest(ctx context.Context, orderRoom
 			staffIDs = append(staffIDs, staff.ID)
 		}
 
-		serviceNotificationMsg := types.ServiceNotificationMessage{
+		serviceNotificationMsg := types.NotificationMessage{
 			Content:     notification.Content,
 			Type:        notification.Type,
 			ContentID:   notification.ContentID,
@@ -388,7 +386,7 @@ func (s *orderSvcImpl) UpdateOrderServiceForGuest(ctx context.Context, orderRoom
 			ReceiverIDs: staffIDs,
 		}
 
-		go func(msg types.ServiceNotificationMessage) {
+		go func(msg types.NotificationMessage) {
 			body, _ := json.Marshal(msg)
 			if err := s.mqProvider.PublishMessage(common.ExchangeNotification, common.RoutingKeyServiceNotification, body); err != nil {
 				s.logger.Error("publish service notification message failed", zap.Error(err))
@@ -500,7 +498,7 @@ func (s *orderSvcImpl) UpdateOrderServiceForAdmin(ctx context.Context, departmen
 			return err
 		}
 
-		serviceNotificationMsg := types.ServiceNotificationMessage{
+		serviceNotificationMsg := types.NotificationMessage{
 			Content:     notification.Content,
 			Type:        notification.Type,
 			ContentID:   notification.ContentID,
@@ -508,7 +506,7 @@ func (s *orderSvcImpl) UpdateOrderServiceForAdmin(ctx context.Context, departmen
 			ReceiverIDs: []int64{orderService.OrderRoomID},
 		}
 
-		go func(msg types.ServiceNotificationMessage) {
+		go func(msg types.NotificationMessage) {
 			body, _ := json.Marshal(msg)
 			if err := s.mqProvider.PublishMessage(common.ExchangeNotification, common.RoutingKeyServiceNotification, body); err != nil {
 				s.logger.Error("publish service notification message failed", zap.Error(err))

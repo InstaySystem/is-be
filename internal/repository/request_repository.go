@@ -13,7 +13,11 @@ type RequestRepository interface {
 
 	FindRequestTypeByID(ctx context.Context, requestTypeID int64) (*model.RequestType, error)
 
+	FindRequestTypeByIDWithDetails(ctx context.Context, requestTypeID int64) (*model.RequestType, error)
+
 	UpdateRequestType(ctx context.Context, requestTypeID int64, updateData map[string]any) error
 
 	DeleteRequestType(ctx context.Context, requestTypeID int64) error
+
+	CreateRequest(ctx context.Context, request *model.Request) error
 }

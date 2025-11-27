@@ -73,7 +73,7 @@ func NewContainer(
 	userCtn := NewUserContainer(userRepo, sfGen, logger, bHash, cfg.JWT.RefreshExpiresIn, cacheProvider)
 	departmentCtn := NewDepartmentContainer(departmentRepo, sfGen, logger)
 	serviceCtn := NewServiceContainer(db, serviceRepo, sfGen, logger, mqProvider)
-	requestCtn := NewRequestContainer(requestRepo, sfGen, logger)
+	requestCtn := NewRequestContainer(db, requestRepo, orderRepo, notificationRepo, sfGen, logger, mqProvider)
 	roomCtn := NewRoomContainer(roomRepo, sfGen, logger)
 	bookingCtn := NewBookingContainer(db, logger)
 	orderCtn := NewOrderContainer(db, orderRepo, bookingRepo, serviceRepo, notificationRepo, sfGen, logger, cacheProvider, jwtProvider, mqProvider, cfg.JWT.GuestName)

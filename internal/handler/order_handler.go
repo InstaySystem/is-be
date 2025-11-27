@@ -147,8 +147,6 @@ func (h *OrderHandler) CreateOrderService(c *gin.Context) {
 			common.ToAPIResponse(c, http.StatusNotFound, err.Error(), nil)
 		case common.ErrOrderRoomNotFound:
 			common.ToAPIResponse(c, http.StatusForbidden, err.Error(), nil)
-		case common.ErrOrderServiceCodeAlreadyExists:
-			common.ToAPIResponse(c, http.StatusConflict, err.Error(), nil)
 		default:
 			common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
 		}

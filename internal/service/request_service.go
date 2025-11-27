@@ -15,4 +15,6 @@ type RequestService interface {
 	UpdateRequestType(ctx context.Context, requestTypeID, userID int64, req types.UpdateRequestTypeRequest) error
 
 	DeleteRequestType(ctx context.Context, requestTypeID int64) error
+
+	CreateRequest(ctx context.Context, orderRoomID int64, req types.CreateRequestRequest) (int64, error)
 }

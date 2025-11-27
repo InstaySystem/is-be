@@ -251,7 +251,7 @@ func (w *ListenWorker) processEmail(msg *imap.Message, section *imap.BodySection
 
 	bookingData.ID, err = w.sfGen.NextID()
 	if err != nil {
-		w.logger.Error("generate booking ID failed", zap.Error(err))
+		w.logger.Error("generate booking id failed", zap.Error(err))
 		return
 	}
 

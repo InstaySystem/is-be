@@ -9,9 +9,11 @@ const (
 	QueueNameDeleteFile  = "file.action.delete"
 	RoutingKeyDeleteFile = "file.action.delete"
 
-	ExchangeNotification          = "notification.order"
-	QueueNameServiceNotification  = "notification.order.service"
-	RoutingKeyServiceNotification = "notification.order.service"
+	ExchangeNotification          = "notification.send"
+	QueueNameServiceNotification  = "notification.send.service"
+	RoutingKeyServiceNotification = "notification.send.service"
+	QueueNameRequestNotification  = "notification.send.request"
+	RoutingKeyRequestNotification = "notification.send.request"
 
 	RoleAdmin            = "admin"
 	RoleAdminDisplayName = "Quản trị viên"

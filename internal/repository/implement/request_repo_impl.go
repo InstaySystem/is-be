@@ -43,6 +43,18 @@ func (r *requestRepoImpl) FindRequestTypeByID(ctx context.Context, requestTypeID
 	return &requestType, nil
 }
 
+func (r *requestRepoImpl) FindRequestTypeByIDWithDetails(ctx context.Context, requestTypeID int64) (*model.RequestType, error) {
+	var requestType model.RequestType
+	if err := r.db.WithContext(ctx).Preload("Department.Staffs").Where("id = ?", requestTypeID).First(&requestType).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
+	return &requestType, nil
+}
+
 func (r *requestRepoImpl) UpdateRequestType(ctx context.Context, requestTypeID int64, updateData map[string]any) error {
 	result := r.db.WithContext(ctx).Model(&model.RequestType{}).Where("id = ?", requestTypeID).Updates(updateData)
 	if result.Error != nil {
@@ -67,4 +79,8 @@ func (r *requestRepoImpl) DeleteRequestType(ctx context.Context, requestTypeID i
 	}
 
 	return nil
+}
+
+func (r *requestRepoImpl) CreateRequest(ctx context.Context, request *model.Request) error {
+	return r.db.WithContext(ctx).Create(request).Error
 }

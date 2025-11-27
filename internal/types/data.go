@@ -38,7 +38,7 @@ type AuthEmailMessage struct {
 	Otp     string `json:"otp"`
 }
 
-type ServiceNotificationMessage struct {
+type NotificationMessage struct {
 	Content     string  `json:"content"`
 	Type        string  `json:"type"`
 	ContentID   int64   `json:"content_id"`

@@ -32,5 +32,6 @@ type User struct {
 	OrderRoomsCreated    []*OrderRoom         `gorm:"foreignKey:CreatedByID;references:ID;constraint:fk_order_rooms_created_by,OnUpdate:CASCADE,OnDelete:RESTRICT" json:"order_rooms_created"`
 	OrderRoomsUpdated    []*OrderRoom         `gorm:"foreignKey:UpdatedByID;references:ID;constraint:fk_order_rooms_updated_by,OnUpdate:CASCADE,OnDelete:RESTRICT" json:"order_rooms_updated"`
 	OrderServicesUpdated []*OrderService      `gorm:"foreignKey:UpdatedByID;references:ID;constraint:fk_order_services_updated_by,OnUpdate:CASCADE,OnDelete:RESTRICT" json:"order_services_updated"`
+	RequestsUpdated      []*Request           `gorm:"foreignKey:UpdatedByID;references:ID;constraint:fk_requests_updated_by,OnUpdate:CASCADE,OnDelete:RESTRICT" json:"requests_updated"`
 	NotificationsRead    []*NotificationStaff `gorm:"foreignKey:StaffID;references:ID;constraint:fk_notification_staffs_staff,OnUpdate:CASCADE,OnDelete:CASCADE" json:"notifications_read"`
 }

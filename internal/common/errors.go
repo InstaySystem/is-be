@@ -77,7 +77,5 @@ var (
 
 	ErrOrderServiceNotFound = errors.New("order service not found")
 
-	ErrOrderServiceCodeAlreadyExists = errors.New("order service code already exists")
-
 	ErrInvalidStatus = errors.New("invalid status")
 )

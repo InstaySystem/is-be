@@ -142,3 +142,38 @@ func (h *RequestHandler) DeleteRequestType(c *gin.Context) {
 
 	common.ToAPIResponse(c, http.StatusOK, "Request type deleted successfully", nil)
 }
+
+func (h *RequestHandler) CreateRequest(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	orderRoomID := c.GetInt64("order_room_id")
+	if orderRoomID == 0 {
+		common.ToAPIResponse(c, http.StatusForbidden, common.ErrForbidden.Error(), nil)
+		return
+	}
+
+	var req types.CreateRequestRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		mess := common.HandleValidationError(err)
+		common.ToAPIResponse(c, http.StatusBadRequest, mess, nil)
+		return
+	}
+
+	id, err := h.requestSvc.CreateRequest(ctx, orderRoomID, req)
+	if err != nil {
+		switch err {
+		case common.ErrRequestTypeNotFound:
+			common.ToAPIResponse(c, http.StatusNotFound, err.Error(), nil)
+		case common.ErrOrderRoomNotFound:
+			common.ToAPIResponse(c, http.StatusForbidden, err.Error(), nil)
+		default:
+			common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
+		}
+		return
+	}
+
+	common.ToAPIResponse(c, http.StatusCreated, "Request created successful", gin.H{
+		"id": id,
+	})
+}

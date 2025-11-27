@@ -217,6 +217,11 @@ type CreateOrderServiceRequest struct {
 	GuestNote *string `json:"guest_note" binding:"omitempty,min=1"`
 }
 
+type CreateRequestRequest struct {
+	RequestTypeID int64  `json:"request_type_id" binding:"required"`
+	Content       string `json:"content" binding:"required,min=1"`
+}
+
 type UpdateOrderServiceRequest struct {
 	Status    string  `json:"status" binding:"required,oneof=rejected accepted canceled"`
 	Reason    *string `json:"reason" binding:"omitempty"`

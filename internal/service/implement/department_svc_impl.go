@@ -34,7 +34,7 @@ func NewDepartmentService(
 func (s *departmentSvcImpl) CreateDepartment(ctx context.Context, userID int64, req types.CreateDepartmentRequest) error {
 	id, err := s.sfGen.NextID()
 	if err != nil {
-		s.logger.Error("generate department ID failed", zap.Error(err))
+		s.logger.Error("generate department id failed", zap.Error(err))
 		return err
 	}
 
@@ -77,7 +77,7 @@ func (s *departmentSvcImpl) GetDepartments(ctx context.Context) ([]*model.Depart
 
 	staffCounts, err := s.departmentRepo.CountStaffByID(ctx, departmentIDs)
 	if err != nil {
-		s.logger.Error("count staff by department ID failed", zap.Error(err))
+		s.logger.Error("count staff by department id failed", zap.Error(err))
 		return nil, err
 	}
 

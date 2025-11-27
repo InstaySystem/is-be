@@ -17,6 +17,7 @@ var allModels = []any{
 	&model.Service{},
 	&model.ServiceImage{},
 	&model.RequestType{},
+	&model.Request{},
 	&model.RoomType{},
 	&model.Floor{},
 	&model.Room{},

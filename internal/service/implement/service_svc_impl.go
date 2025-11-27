@@ -43,7 +43,7 @@ func NewServiceService(
 func (s *serviceSvcImpl) CreateServiceType(ctx context.Context, userID int64, req types.CreateServiceTypeRequest) error {
 	id, err := s.sfGen.NextID()
 	if err != nil {
-		s.logger.Error("generate service type ID failed", zap.Error(err))
+		s.logger.Error("generate service type id failed", zap.Error(err))
 		return err
 	}
 
@@ -88,7 +88,7 @@ func (s *serviceSvcImpl) GetServiceTypesForAdmin(ctx context.Context) ([]*model.
 
 	serviceCounts, err := s.serviceRepo.CountServiceByServiceTypeID(ctx, serviceTypeIDs)
 	if err != nil {
-		s.logger.Error("count service by service type ID failed", zap.Error(err))
+		s.logger.Error("count service by service type id failed", zap.Error(err))
 		return nil, err
 	}
 
@@ -164,7 +164,7 @@ func (s *serviceSvcImpl) DeleteServiceType(ctx context.Context, serviceTypeID in
 func (s *serviceSvcImpl) CreateService(ctx context.Context, userID int64, req types.CreateServiceRequest) (int64, error) {
 	serviceID, err := s.sfGen.NextID()
 	if err != nil {
-		s.logger.Error("generate service ID failed", zap.Error(err))
+		s.logger.Error("generate service id failed", zap.Error(err))
 		return 0, err
 	}
 
@@ -184,7 +184,7 @@ func (s *serviceSvcImpl) CreateService(ctx context.Context, userID int64, req ty
 	for _, reqImg := range req.Images {
 		imageID, err := s.sfGen.NextID()
 		if err != nil {
-			s.logger.Error("generate service image ID failed", zap.Error(err))
+			s.logger.Error("generate service image id failed", zap.Error(err))
 			return 0, err
 		}
 		serviceImage := &model.ServiceImage{
@@ -376,7 +376,7 @@ func (s *serviceSvcImpl) UpdateService(ctx context.Context, serviceID, userID in
 			for _, reqImg := range req.NewImages {
 				imageID, err := s.sfGen.NextID()
 				if err != nil {
-					s.logger.Error("generate service image ID failed", zap.Error(err))
+					s.logger.Error("generate service image id failed", zap.Error(err))
 					return err
 				}
 				serviceImage := &model.ServiceImage{
