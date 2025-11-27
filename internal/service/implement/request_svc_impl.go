@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/InstaySystem/is-be/internal/common"
@@ -257,4 +258,97 @@ func (s *requestSvcImpl) GetRequestByCode(ctx context.Context, orderRoomID int64
 	}
 
 	return request, nil
+}
+
+func (s *requestSvcImpl) UpdateRequestForGuest(ctx context.Context, orderRoomID, requestID int64, req types.UpdateRequestRequest) error {
+	orderRoom, err := s.orderRepo.FindOrderRoomByIDWithRoom(ctx, orderRoomID)
+	if err != nil {
+		s.logger.Error("find order room by id failed", zap.Int64("id", orderRoomID), zap.Error(err))
+		return err
+	}
+	if orderRoom == nil {
+		return common.ErrOrderRoomNotFound
+	}
+
+	if err = s.db.Transaction(func(tx *gorm.DB) error {
+		request, err := s.requestRepo.FindRequestByIDWithRequestTypeDetailsTx(ctx, tx, requestID)
+		if err != nil {
+			if strings.Contains(err.Error(), "lock") {
+				return common.ErrLockedRecord
+			}
+			s.logger.Error("find request by id failed", zap.Int64("id", requestID), zap.Error(err))
+			return err
+		}
+		if request == nil {
+			return common.ErrRequestNotFound
+		}
+
+		if request.Status != "pending" || req.Status != "canceled" {
+			return common.ErrInvalidStatus
+		}
+
+		if err = s.requestRepo.UpdateRequestTx(ctx, tx, requestID, map[string]any{"status": req.Status}); err != nil {
+			s.logger.Error("update request failed", zap.Int64("id", requestID), zap.Error(err))
+			return err
+		}
+
+		notificationID, err := s.sfGen.NextID()
+		if err != nil {
+			s.logger.Error("generate notification id failed", zap.Error(err))
+			return err
+		}
+
+		content := fmt.Sprintf("Phòng %s đã hủy %s", orderRoom.Room.Name, request.RequestType.Name)
+		notification := &model.Notification{
+			ID:           notificationID,
+			DepartmentID: request.RequestType.DepartmentID,
+			Type:         "request",
+			Receiver:     "staff",
+			Content:      content,
+			ContentID:    request.ID,
+			OrderRoomID:  orderRoomID,
+		}
+
+		if err = s.notificationRepo.CreateNotificationTx(ctx, tx, notification); err != nil {
+			s.logger.Error("create notification failed", zap.Error(err))
+			return err
+		}
+
+		staffIDs := make([]int64, 0, len(request.RequestType.Department.Staffs))
+		for _, staff := range request.RequestType.Department.Staffs {
+			staffIDs = append(staffIDs, staff.ID)
+		}
+
+		requestNotificationMsg := types.NotificationMessage{
+			Content:     notification.Content,
+			Type:        notification.Type,
+			ContentID:   notification.ContentID,
+			Receiver:    notification.Receiver,
+			Department:  &request.RequestType.Department.Name,
+			ReceiverIDs: staffIDs,
+		}
+
+		go func(msg types.NotificationMessage) {
+			body, _ := json.Marshal(msg)
+			if err := s.mqProvider.PublishMessage(common.ExchangeNotification, common.RoutingKeyRequestNotification, body); err != nil {
+				s.logger.Error("publish request notification message failed", zap.Error(err))
+			}
+		}(requestNotificationMsg)
+
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *requestSvcImpl) GetRequestsForGuest(ctx context.Context, orderRoomID int64) ([]*model.Request, error) {
+	requests, err := s.requestRepo.FindAllRequestsByOrderRoomIDWithDetails(ctx, orderRoomID)
+	if err != nil {
+		s.logger.Error("find all requests by order room id failed", zap.Error(err))
+		return nil, err
+	}
+
+	return requests, nil
 }

@@ -222,6 +222,10 @@ type CreateRequestRequest struct {
 	Content       string `json:"content" binding:"required,min=1"`
 }
 
+type UpdateRequestRequest struct {
+	Status string `json:"status" binding:"required,oneof=done accepted canceled"`
+}
+
 type UpdateOrderServiceRequest struct {
 	Status    string  `json:"status" binding:"required,oneof=rejected accepted canceled"`
 	Reason    *string `json:"reason" binding:"omitempty"`

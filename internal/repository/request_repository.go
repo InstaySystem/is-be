@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/InstaySystem/is-be/internal/model"
+	"gorm.io/gorm"
 )
 
 type RequestRepository interface {
@@ -24,4 +25,10 @@ type RequestRepository interface {
 	CreateRequest(ctx context.Context, request *model.Request) error
 
 	FindRequestByCodeWithRequestType(ctx context.Context, requestCode string) (*model.Request, error)
+
+	FindRequestByIDWithRequestTypeDetailsTx(ctx context.Context, tx *gorm.DB, requestID int64) (*model.Request, error)
+
+	UpdateRequestTx(ctx context.Context, tx *gorm.DB, requestID int64, updateData map[string]any) error
+
+	FindAllRequestsByOrderRoomIDWithDetails(ctx context.Context, orderRoomID int64) ([]*model.Request, error)
 }

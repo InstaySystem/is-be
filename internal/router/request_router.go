@@ -25,5 +25,9 @@ func RequestRouter(rg *gin.RouterGroup, hdl *handler.RequestHandler, authMid *mi
 		guest.POST("", hdl.CreateRequest)
 
 		guest.GET("/:code", hdl.GetRequestByCode)
+
+		guest.PUT("/:id", hdl.UpdateRequestForGuest)
+
+		guest.GET("", hdl.GetRequestsForGuest)
 	}
 }

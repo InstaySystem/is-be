@@ -249,28 +249,6 @@ func (s *orderSvcImpl) CreateOrderService(ctx context.Context, orderRoomID int64
 	return code, nil
 }
 
-func (s *orderSvcImpl) GetOrderServiceByCode(ctx context.Context, orderRoomID int64, orderServiceCode string) (*model.OrderService, error) {
-	orderService, err := s.orderRepo.FindOrderServiceByCodeWithServiceDetails(ctx, orderServiceCode)
-	if err != nil {
-		s.logger.Error("find order service by code failed", zap.String("code", orderServiceCode), zap.Error(err))
-		return nil, err
-	}
-	if orderService == nil || orderService.OrderRoomID != orderRoomID {
-		return nil, common.ErrOrderServiceNotFound
-	}
-
-	updateData := map[string]any{
-		"read_at": time.Now(),
-		"is_read": true,
-	}
-	if err = s.notificationRepo.UpdateNotificationsByContentIDAndTypeAndReceiver(ctx, orderService.ID, "service", "guest", updateData); err != nil {
-		s.logger.Error("update read service notification failed", zap.Int64("id", orderService.ID), zap.Error(err))
-		return nil, err
-	}
-
-	return orderService, nil
-}
-
 func (s *orderSvcImpl) GetOrderServiceByID(ctx context.Context, userID int64, orderServiceID int64, departmentID *int64) (*model.OrderService, error) {
 	orderService, err := s.orderRepo.FindOrderServiceByIDWithDetails(ctx, orderServiceID)
 	if err != nil {
@@ -474,7 +452,7 @@ func (s *orderSvcImpl) UpdateOrderServiceForAdmin(ctx context.Context, departmen
 
 		notificationID, err := s.sfGen.NextID()
 		if err != nil {
-			s.logger.Error("generate notification ID failed", zap.Error(err))
+			s.logger.Error("generate notification id failed", zap.Error(err))
 			return err
 		}
 
@@ -525,7 +503,7 @@ func (s *orderSvcImpl) UpdateOrderServiceForAdmin(ctx context.Context, departmen
 func (s *orderSvcImpl) GetOrderServicesForGuest(ctx context.Context, orderRoomID int64) ([]*model.OrderService, error) {
 	orderServices, err := s.orderRepo.FindAllOrderServicesByOrderRoomIDWithDetails(ctx, orderRoomID)
 	if err != nil {
-		s.logger.Error("find all order services by order room ID failed", zap.Error(err))
+		s.logger.Error("find all order services by order room id failed", zap.Error(err))
 		return nil, err
 	}
 

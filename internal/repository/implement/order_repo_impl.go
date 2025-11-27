@@ -73,18 +73,6 @@ func (r *orderRepoImpl) UpdateOrderServiceTx(ctx context.Context, tx *gorm.DB, o
 	return tx.WithContext(ctx).Model(&model.OrderService{}).Where("id = ?", orderServiceID).Updates(updateData).Error
 }
 
-func (r *orderRepoImpl) FindOrderServiceByCodeWithServiceDetails(ctx context.Context, orderServiceCode string) (*model.OrderService, error) {
-	var orderService model.OrderService
-	if err := r.db.WithContext(ctx).Preload("Service.ServiceType").Preload("Service.ServiceImages", "is_thumbnail = true").Where("code = ?", orderServiceCode).First(&orderService).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return nil, nil
-		}
-		return nil, err
-	}
-
-	return &orderService, nil
-}
-
 func (r *orderRepoImpl) FindOrderServiceByIDWithDetails(ctx context.Context, orderServiceID int64) (*model.OrderService, error) {
 	var orderService model.OrderService
 	if err := r.db.WithContext(ctx).Preload("Service.ServiceType").Preload("Service.ServiceImages", "is_thumbnail = true").Preload("OrderRoom.Room.RoomType").Preload("OrderRoom.Room.Floor").Preload("UpdatedBy").Where("id = ?", orderServiceID).First(&orderService).Error; err != nil {
@@ -99,7 +87,7 @@ func (r *orderRepoImpl) FindOrderServiceByIDWithDetails(ctx context.Context, ord
 
 func (r *orderRepoImpl) FindAllOrderServicesByOrderRoomIDWithDetails(ctx context.Context, orderRoomID int64) ([]*model.OrderService, error) {
 	var orderServices []*model.OrderService
-	if err := r.db.WithContext(ctx).Preload("Service.ServiceType").Where("order_room_id = ?", orderRoomID).Find(&orderServices).Error; err != nil {
+	if err := r.db.WithContext(ctx).Preload("Service.ServiceType").Preload("Service.ServiceImages", "is_thumbnail = true").Where("order_room_id = ?", orderRoomID).Find(&orderServices).Error; err != nil {
 		return nil, err
 	}
 

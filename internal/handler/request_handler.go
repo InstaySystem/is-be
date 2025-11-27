@@ -220,3 +220,65 @@ func (h *RequestHandler) GetRequestByCode(c *gin.Context) {
 		"request": common.ToSimpleRequestResponse(request),
 	})
 }
+
+func (h *RequestHandler) UpdateRequestForGuest(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	requestIDStr := c.Param("id")
+	requestID, err := strconv.ParseInt(requestIDStr, 10, 64)
+	if err != nil {
+		common.ToAPIResponse(c, http.StatusBadRequest, common.ErrInvalidID.Error(), nil)
+		return
+	}
+
+	orderRoomID := c.GetInt64("order_room_id")
+	if orderRoomID == 0 {
+		common.ToAPIResponse(c, http.StatusForbidden, common.ErrForbidden.Error(), nil)
+		return
+	}
+
+	var req types.UpdateRequestRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		mess := common.HandleValidationError(err)
+		common.ToAPIResponse(c, http.StatusBadRequest, mess, nil)
+		return
+	}
+
+	if err := h.requestSvc.UpdateRequestForGuest(ctx, orderRoomID, requestID, req); err != nil {
+		switch err {
+		case common.ErrRequestNotFound:
+			common.ToAPIResponse(c, http.StatusNotFound, err.Error(), nil)
+		case common.ErrOrderRoomNotFound:
+			common.ToAPIResponse(c, http.StatusForbidden, err.Error(), nil)
+		case common.ErrInvalidStatus:
+			common.ToAPIResponse(c, http.StatusConflict, err.Error(), nil)
+		default:
+			common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
+		}
+		return
+	}
+
+	common.ToAPIResponse(c, http.StatusOK, "Request updated successfully", nil)
+}
+
+func (h *RequestHandler) GetRequestsForGuest(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	orderRoomID := c.GetInt64("order_room_id")
+	if orderRoomID == 0 {
+		common.ToAPIResponse(c, http.StatusForbidden, common.ErrForbidden.Error(), nil)
+		return
+	}
+
+	requests, err := h.requestSvc.GetRequestsForGuest(ctx, orderRoomID)
+	if err != nil {
+		common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
+		return
+	}
+
+	common.ToAPIResponse(c, http.StatusOK, "Get request list successfully", gin.H{
+		"requests": common.ToSimpleRequestsResponse(requests),
+	})
+}

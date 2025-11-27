@@ -158,34 +158,6 @@ func (h *OrderHandler) CreateOrderService(c *gin.Context) {
 	})
 }
 
-func (h *OrderHandler) GetOrderServiceByCode(c *gin.Context) {
-	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
-	defer cancel()
-
-	orderServiceCode := c.Param("code")
-
-	orderRoomID := c.GetInt64("order_room_id")
-	if orderRoomID == 0 {
-		common.ToAPIResponse(c, http.StatusForbidden, common.ErrForbidden.Error(), nil)
-		return
-	}
-
-	orderService, err := h.orderSvc.GetOrderServiceByCode(ctx, orderRoomID, orderServiceCode)
-	if err != nil {
-		switch err {
-		case common.ErrOrderServiceNotFound:
-			common.ToAPIResponse(c, http.StatusNotFound, err.Error(), nil)
-		default:
-			common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
-		}
-		return
-	}
-
-	common.ToAPIResponse(c, http.StatusOK, "Get order service information successful", gin.H{
-		"order_service": common.ToSimpleOrderServiceResponse(orderService),
-	})
-}
-
 func (h *OrderHandler) UpdateOrderServiceForGuest(c *gin.Context) {
 	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
 	defer cancel()
@@ -214,8 +186,10 @@ func (h *OrderHandler) UpdateOrderServiceForGuest(c *gin.Context) {
 		switch err {
 		case common.ErrOrderServiceNotFound:
 			common.ToAPIResponse(c, http.StatusNotFound, err.Error(), nil)
-		case common.ErrOrderRoomNotFound, common.ErrInvalidStatus:
+		case common.ErrOrderRoomNotFound:
 			common.ToAPIResponse(c, http.StatusForbidden, err.Error(), nil)
+		case common.ErrInvalidStatus:
+			common.ToAPIResponse(c, http.StatusConflict, err.Error(), nil)
 		default:
 			common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
 		}
@@ -355,7 +329,7 @@ func (h *OrderHandler) UpdateOrderServiceForAdmin(c *gin.Context) {
 		case common.ErrOrderServiceNotFound:
 			common.ToAPIResponse(c, http.StatusNotFound, err.Error(), nil)
 		case common.ErrInvalidStatus:
-			common.ToAPIResponse(c, http.StatusForbidden, err.Error(), nil)
+			common.ToAPIResponse(c, http.StatusConflict, err.Error(), nil)
 		default:
 			common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
 		}
@@ -382,6 +356,6 @@ func (h *OrderHandler) GetOrderServicesForGuest(c *gin.Context) {
 	}
 
 	common.ToAPIResponse(c, http.StatusOK, "Get order service list successfully", gin.H{
-		"order_services": common.ToBasicOrderServicesResponse(orderServices),
+		"order_services": common.ToSimpleOrderServicesResponse(orderServices),
 	})
 }

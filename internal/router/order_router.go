@@ -29,8 +29,6 @@ func OrderRouter(rg *gin.RouterGroup, hdl *handler.OrderHandler, authMid *middle
 	{
 		guest.POST("", hdl.CreateOrderService)
 
-		guest.GET("/:code", hdl.GetOrderServiceByCode)
-
 		guest.PUT("/:id", hdl.UpdateOrderServiceForGuest)
 
 		guest.GET("", hdl.GetOrderServicesForGuest)

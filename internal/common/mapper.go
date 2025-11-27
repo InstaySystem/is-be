@@ -678,6 +678,32 @@ func ToSimpleRequestResponse(request *model.Request) *types.SimpleRequestRespons
 	}
 }
 
+func ToSimpleRequestsResponse(requests []*model.Request) []*types.SimpleRequestResponse {
+	if len(requests) == 0 {
+		return make([]*types.SimpleRequestResponse, 0)
+	}
+
+	requestsRes := make([]*types.SimpleRequestResponse, 0, len(requests))
+	for _, request := range requests {
+		requestsRes = append(requestsRes, ToSimpleRequestResponse(request))
+	}
+
+	return requestsRes
+}
+
+func ToSimpleOrderServicesResponse(orderServices []*model.OrderService) []*types.SimpleOrderServiceResponse {
+	if len(orderServices) == 0 {
+		return make([]*types.SimpleOrderServiceResponse, 0)
+	}
+
+	orderServicesRes := make([]*types.SimpleOrderServiceResponse, 0, len(orderServices))
+	for _, orderService := range orderServices {
+		orderServicesRes = append(orderServicesRes, ToSimpleOrderServiceResponse(orderService))
+	}
+
+	return orderServicesRes
+}
+
 func ToNotificationStaffResponse(notificationStaff *model.NotificationStaff) *types.NotificationStaffResponse {
 	if notificationStaff == nil {
 		return nil

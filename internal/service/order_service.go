@@ -17,8 +17,6 @@ type OrderService interface {
 
 	CreateOrderService(ctx context.Context, orderRoomID int64, req types.CreateOrderServiceRequest) (string, error)
 
-	GetOrderServiceByCode(ctx context.Context, orderRoomID int64, orderServiceCode string) (*model.OrderService, error)
-
 	GetOrderServiceByID(ctx context.Context, userID int64, orderServiceID int64, departmentID *int64) (*model.OrderService, error)
 
 	UpdateOrderServiceForGuest(ctx context.Context, orderRoomID, orderServiceID int64, req types.UpdateOrderServiceRequest) error
