@@ -218,7 +218,9 @@ type CreateOrderServiceRequest struct {
 }
 
 type UpdateOrderServiceRequest struct {
-	Status string `json:"status" binding:"required,oneof=rejected accepted canceled"`
+	Status    string  `json:"status" binding:"required,oneof=rejected accepted canceled"`
+	Reason    *string `json:"reason" binding:"omitempty"`
+	StaffNote *string `json:"staff_note" binding:"omitempty"`
 }
 
 type OrderServicePaginationQuery struct {

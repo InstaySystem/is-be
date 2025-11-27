@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -315,7 +316,7 @@ func (s *orderSvcImpl) GetOrderServiceByID(ctx context.Context, userID int64, or
 	return orderService, nil
 }
 
-func (s *orderSvcImpl) UpdateOrderServiceForGuest(ctx context.Context, orderRoomID, orderServiceID int64, status string) error {
+func (s *orderSvcImpl) UpdateOrderServiceForGuest(ctx context.Context, orderRoomID, orderServiceID int64, req types.UpdateOrderServiceRequest) error {
 	orderRoom, err := s.orderRepo.FindOrderRoomByIDWithRoom(ctx, orderRoomID)
 	if err != nil {
 		s.logger.Error("find order room by id failed", zap.Int64("id", orderRoomID), zap.Error(err))
@@ -338,12 +339,16 @@ func (s *orderSvcImpl) UpdateOrderServiceForGuest(ctx context.Context, orderRoom
 			return common.ErrOrderServiceNotFound
 		}
 
-		if orderService.Status != "pending" || status != "canceled" {
+		if orderService.Status != "pending" || req.Status != "canceled" {
 			return common.ErrInvalidStatus
 		}
 
-		if err = s.orderRepo.UpdateOrderServiceTx(ctx, tx, orderServiceID, map[string]any{"status": status}); err != nil {
-			s.logger.Error("cancel order service failed", zap.Int64("id", orderServiceID), zap.Error(err))
+		updateData := map[string]any{
+			"status":        req.Status,
+			"cancel_reason": *req.Reason,
+		}
+		if err = s.orderRepo.UpdateOrderServiceTx(ctx, tx, orderServiceID, updateData); err != nil {
+			s.logger.Error("update order service failed", zap.Int64("id", orderServiceID), zap.Error(err))
 			return err
 		}
 
@@ -353,7 +358,7 @@ func (s *orderSvcImpl) UpdateOrderServiceForGuest(ctx context.Context, orderRoom
 			return err
 		}
 
-		content := fmt.Sprintf("Phòng %s đã hủy dịch vụ %s", orderRoom.Room.Name, orderService.Service.Name)
+		content := fmt.Sprintf("Phòng %s đã hủy %d %s", orderRoom.Room.Name, orderService.Quantity, orderService.Service.Name)
 		notification := &model.Notification{
 			ID:           notificationID,
 			DepartmentID: orderService.Service.ServiceType.DepartmentID,
@@ -361,6 +366,7 @@ func (s *orderSvcImpl) UpdateOrderServiceForGuest(ctx context.Context, orderRoom
 			Receiver:     "staff",
 			Content:      content,
 			ContentID:    orderService.ID,
+			OrderRoomID:  orderRoomID,
 		}
 
 		if err = s.notificationRepo.CreateNotificationTx(ctx, tx, notification); err != nil {
@@ -426,4 +432,93 @@ func (s *orderSvcImpl) GetOrderServicesForAdmin(ctx context.Context, query types
 	}
 
 	return orderServices, meta, nil
+}
+
+func (s *orderSvcImpl) UpdateOrderServiceForAdmin(ctx context.Context, departmentID *int64, userID, orderServiceID int64, req types.UpdateOrderServiceRequest) error {
+	if err := s.db.Transaction(func(tx *gorm.DB) error {
+		orderService, err := s.orderRepo.FindOrderServiceByIDWithServiceDetailsTx(ctx, tx, orderServiceID)
+		if err != nil {
+			if strings.Contains(err.Error(), "lock") {
+				return common.ErrLockedRecord
+			}
+			s.logger.Error("find order service by id failed", zap.Int64("id", orderServiceID), zap.Error(err))
+			return err
+		}
+		if orderService == nil {
+			return common.ErrOrderServiceNotFound
+		}
+
+		if departmentID != nil && orderService.Service.ServiceType.DepartmentID != *departmentID {
+			return common.ErrOrderServiceNotFound
+		}
+
+		if orderService.Status != "pending" || !slices.Contains([]string{"rejected", "accepted"}, req.Status) {
+			return common.ErrInvalidStatus
+		}
+
+		updateData := map[string]any{
+			"status":        req.Status,
+			"updated_by_id": userID,
+		}
+
+		if req.Status == "rejected" && req.Reason != nil {
+			updateData["reject_reason"] = *req.Reason
+		}
+		if req.Status == "accepted" && req.StaffNote != nil {
+			updateData["staff_note"] = *req.StaffNote
+		}
+
+		if err = s.orderRepo.UpdateOrderServiceTx(ctx, tx, orderServiceID, updateData); err != nil {
+			s.logger.Error("update order service failed", zap.Int64("id", orderServiceID), zap.Error(err))
+			return err
+		}
+
+		notificationID, err := s.sfGen.NextID()
+		if err != nil {
+			s.logger.Error("generate notification ID failed", zap.Error(err))
+			return err
+		}
+
+		displayStatus := "đã được chấp nhận"
+		if req.Status == "rejected" {
+			displayStatus = "đã bị từ chối"
+		}
+
+		content := fmt.Sprintf("%d %s đã %s", orderService.Quantity, orderService.Service.Name, displayStatus)
+		notification := &model.Notification{
+			ID:           notificationID,
+			DepartmentID: orderService.Service.ServiceType.DepartmentID,
+			Type:         "service",
+			Receiver:     "guest",
+			Content:      content,
+			ContentID:    orderService.ID,
+			OrderRoomID:  orderService.OrderRoomID,
+		}
+
+		if err = s.notificationRepo.CreateNotificationTx(ctx, tx, notification); err != nil {
+			s.logger.Error("create notification failed", zap.Error(err))
+			return err
+		}
+
+		serviceNotificationMsg := types.ServiceNotificationMessage{
+			Content:     notification.Content,
+			Type:        notification.Type,
+			ContentID:   notification.ContentID,
+			Receiver:    notification.Receiver,
+			ReceiverIDs: []int64{orderService.OrderRoomID},
+		}
+
+		go func(msg types.ServiceNotificationMessage) {
+			body, _ := json.Marshal(msg)
+			if err := s.mqProvider.PublishMessage(common.ExchangeNotification, common.RoutingKeyServiceNotification, body); err != nil {
+				s.logger.Error("publish service notification message failed", zap.Error(err))
+			}
+		}(serviceNotificationMsg)
+
+		return nil
+	}); err != nil {
+		return err
+	}
+
+	return nil
 }

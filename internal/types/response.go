@@ -241,6 +241,7 @@ type SimpleOrderServiceResponse struct {
 	GuestNote    *string               `json:"guest_note"`
 	StaffNote    *string               `json:"staff_note"`
 	CancelReason *string               `json:"cancel_reason"`
+	RejectReason *string               `json:"reject_reason"`
 }
 
 type BasicOrderServiceResponse struct {
@@ -266,6 +267,7 @@ type OrderServiceResponse struct {
 	GuestNote    *string                  `json:"guest_note"`
 	StaffNote    *string                  `json:"staff_note"`
 	CancelReason *string                  `json:"cancel_reason"`
+	RejectReason *string                  `json:"reject_reason"`
 	UpdatedBy    *BasicUserResponse       `json:"updated_by"`
 }
 

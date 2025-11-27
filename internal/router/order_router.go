@@ -20,7 +20,7 @@ func OrderRouter(rg *gin.RouterGroup, hdl *handler.OrderHandler, authMid *middle
 
 		admin.GET("/:id", hdl.GetOrderServiceByID)
 
-		// admin.PUT("/:id", hdl.UpdateOrderServiceForAdmin)
+		admin.PUT("/:id", hdl.UpdateOrderServiceForAdmin)
 	}
 
 	rg.POST("/orders/rooms/verify", hdl.VerifyOrderRoom)

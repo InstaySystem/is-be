@@ -32,6 +32,7 @@ type OrderService struct {
 	GuestNote    *string   `gorm:"type:text" json:"guest_note"`
 	StaffNote    *string   `gorm:"type:text" json:"staff_note"`
 	CancelReason *string   `gorm:"type:text" json:"cancel_reason"`
+	RejectReason *string   `gorm:"type:text" json:"reject_reason"`
 	UpdatedByID  *int64    `gorm:"type:bigint" json:"updated_by_id"`
 
 	Service   *Service   `gorm:"foreignKey:ServiceID;references:ID;constraint:fk_order_services_service,OnUpdate:CASCADE,OnDelete:RESTRICT" json:"service"`
