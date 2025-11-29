@@ -15,4 +15,6 @@ type ChatService interface {
 	GetChatsForGuest(ctx context.Context, orderRoomID int64) ([]*model.Chat, error)
 
 	GetChatByID(ctx context.Context, chatID, userID, departmentID int64) (*model.Chat, error)
+
+	GetChatByCode(ctx context.Context, chatCode string, orderRoomID int64) (*model.Chat, error)
 }

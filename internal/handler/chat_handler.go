@@ -124,3 +124,22 @@ func (h *ChatHandler) GetChatsForGuest(c *gin.Context) {
 		"chats": common.ToBasicChatsResponse(chats),
 	})
 }
+
+func (h *ChatHandler) GetChatByCode(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	chatCode := c.Param("code")
+
+	orderRoomID := c.GetInt64("order_room_id")
+	if orderRoomID == 0 {
+		common.ToAPIResponse(c, http.StatusForbidden, common.ErrForbidden.Error(), nil)
+		return
+	}
+
+	chat, err := h.chatSvc.GetChatByCode(ctx, chatCode, orderRoomID)
+	if err != nil {
+
+	}
+	common.ToAPIResponse(c, http.StatusForbidden, common.ErrForbidden.Error(), chat)
+}

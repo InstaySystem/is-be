@@ -173,6 +173,10 @@ func (s *chatSvcImpl) GetChatByID(ctx context.Context, chatID, userID, departmen
 	return chat, nil
 }
 
+func (s *chatSvcImpl) GetChatByCode(ctx context.Context, chatCode string, orderRoomID int64) (*model.Chat, error) {
+	return nil, nil
+}
+
 func (s *chatSvcImpl) getOrCreateChat(tx *gorm.DB, req types.CreateMessageRequest, clientID int64, departmentID *int64, senderType string, now time.Time) (*model.Chat, error) {
 	if req.ChatID != nil {
 		chat, err := s.chatRepo.FindChatByIDTx(tx, *req.ChatID)

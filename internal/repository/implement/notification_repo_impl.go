@@ -89,7 +89,7 @@ func (r *notificationRepoImpl) CountUnreadNotificationsByDepartmentID(ctx contex
 
 func (r *notificationRepoImpl) CountUnreadNotificationsByOrderRoomID(ctx context.Context, orderRoomID int64) (int64, error) {
 	var count int64
-	if err := r.db.WithContext(ctx).Model(&model.Notification{}).Where("order_room_id = ? AND receiver = ?", orderRoomID, "guest").Count(&count).Error; err != nil {
+	if err := r.db.WithContext(ctx).Model(&model.Notification{}).Where("order_room_id = ? AND receiver = ? AND is_read = true", orderRoomID, "guest").Count(&count).Error; err != nil {
 		return 0, err
 	}
 
