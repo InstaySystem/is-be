@@ -374,6 +374,13 @@ type BasicChatResponse struct {
 	LastMessage *BasicMessageResponse     `json:"last_message"`
 }
 
+type BasicChatWithMessageResponse struct {
+	ID         int64                     `json:"id"`
+	Department *SimpleDepartmentResponse `json:"department"`
+	ExpiredAt  time.Time                 `json:"expired_at"`
+	Messages   []*BasicMessageResponse   `json:"messages"`
+}
+
 type BasicMessageResponse struct {
 	ID         int64      `json:"id"`
 	Content    *string    `json:"content"`

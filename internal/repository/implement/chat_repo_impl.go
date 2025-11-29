@@ -57,7 +57,7 @@ func (r *chatRepoImpl) UpdateChatTx(tx *gorm.DB, chatID int64, updateData map[st
 }
 
 func (r *chatRepoImpl) UpdateMessagesByChatIDAndSenderTypeTx(tx *gorm.DB, chatID int64, senderType string, updateData map[string]any) error {
-	return tx.Model(&model.Message{}).Where("chat_id = ? AND sender_type = ? AND is_read = false", chatID, senderType).Updates(updateData).Error
+	return tx.Model(&model.Message{}).Where("id = ? AND sender_type = ? AND is_read = false", chatID, senderType).Updates(updateData).Error
 }
 
 func (r *chatRepoImpl) FindAllChatsByDepartmentIDWithDetailsPaginated(ctx context.Context, query types.ChatPaginationQuery, staffID, departmentID int64) ([]*model.Chat, int64, error) {
@@ -87,7 +87,7 @@ func (r *chatRepoImpl) FindAllChatsByDepartmentIDWithDetailsPaginated(ctx contex
 func (r *chatRepoImpl) FindChatByIDWithDetailsTx(tx *gorm.DB, chatID, staffID int64) (*model.Chat, error) {
 	var chat model.Chat
 
-	err := tx.
+	if err := tx.
 		Preload("OrderRoom.Room").
 		Preload("OrderRoom.Booking").
 		Preload("Messages", func(db *gorm.DB) *gorm.DB {
@@ -95,11 +95,26 @@ func (r *chatRepoImpl) FindChatByIDWithDetailsTx(tx *gorm.DB, chatID, staffID in
 		}).
 		Preload("Messages.Sender").
 		Preload("Messages.StaffsRead", "staff_id = ?", staffID).
-		First(&chat, chatID).Error
-
-	if err != nil {
+		Where("id = ?", chatID).First(&chat).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
 		return nil, err
 	}
+	return &chat, nil
+}
+
+func (r *chatRepoImpl) FindChatByCodeWithDetailsTx(tx *gorm.DB, chatCode string) (*model.Chat, error) {
+	var chat model.Chat
+	if err := tx.Preload("Department").Preload("Messages", func(db *gorm.DB) *gorm.DB {
+		return db.Order("created_at ASC")
+	}).Where("code = ?", chatCode).First(&chat).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, nil
+		}
+		return nil, err
+	}
+
 	return &chat, nil
 }
 

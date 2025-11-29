@@ -139,7 +139,18 @@ func (h *ChatHandler) GetChatByCode(c *gin.Context) {
 
 	chat, err := h.chatSvc.GetChatByCode(ctx, chatCode, orderRoomID)
 	if err != nil {
-
+		switch err {
+		case common.ErrChatNotFound:
+			common.ToAPIResponse(c, http.StatusNotFound, err.Error(), nil)
+		case common.ErrForbidden:
+			common.ToAPIResponse(c, http.StatusForbidden, err.Error(), nil)
+		default:
+			common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
+		}
+		return
 	}
-	common.ToAPIResponse(c, http.StatusForbidden, common.ErrForbidden.Error(), chat)
+
+	common.ToAPIResponse(c, http.StatusOK, "Get chat information successfully", gin.H{
+		"chat": common.ToBasicChatWithMessagesResponse(chat),
+	})
 }

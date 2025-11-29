@@ -146,7 +146,7 @@ func (s *chatSvcImpl) GetChatByID(ctx context.Context, chatID, userID, departmen
 			"read_at": time.Now(),
 		}
 		if err := s.chatRepo.UpdateMessagesByChatIDAndSenderTypeTx(tx, chatID, "guest", updateData); err != nil {
-			s.logger.Error("update read messages failed", zap.Error(err))
+			s.logger.Error("update messages by chat id failed", zap.Error(err))
 			return err
 		}
 
@@ -155,6 +155,7 @@ func (s *chatSvcImpl) GetChatByID(ctx context.Context, chatID, userID, departmen
 			s.logger.Error("find chat by id failed", zap.Error(err))
 			return err
 		}
+
 		if result == nil {
 			return common.ErrChatNotFound
 		}
@@ -162,7 +163,7 @@ func (s *chatSvcImpl) GetChatByID(ctx context.Context, chatID, userID, departmen
 		if result.DepartmentID != departmentID {
 			return common.ErrForbidden
 		}
-		
+
 		chat = result
 
 		return nil
@@ -174,7 +175,47 @@ func (s *chatSvcImpl) GetChatByID(ctx context.Context, chatID, userID, departmen
 }
 
 func (s *chatSvcImpl) GetChatByCode(ctx context.Context, chatCode string, orderRoomID int64) (*model.Chat, error) {
-	return nil, nil
+	var chat *model.Chat
+	if err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		result, err := s.chatRepo.FindChatByCodeWithDetailsTx(tx, chatCode)
+		if err != nil {
+			s.logger.Error("find chat by code failed", zap.Error(err))
+			return err
+		}
+
+		if result == nil {
+			return common.ErrChatNotFound
+		}
+
+		if result.OrderRoomID != orderRoomID {
+			return common.ErrForbidden
+		}
+
+		now := time.Now()
+		updateData := map[string]any{
+			"is_read": true,
+			"read_at": now,
+		}
+		if err := s.chatRepo.UpdateMessagesByChatIDAndSenderTypeTx(tx, result.ID, "staff", updateData); err != nil {
+			s.logger.Error("update messages by chat id failed", zap.Error(err))
+			return err
+		}
+
+		for _, msg := range result.Messages {
+			if msg.SenderType == "staff" && !msg.IsRead {
+				msg.IsRead = true
+				msg.ReadAt = &now
+			}
+		}
+
+		chat = result
+
+		return nil
+	}); err != nil {
+		return nil, err
+	}
+
+	return chat, nil
 }
 
 func (s *chatSvcImpl) getOrCreateChat(tx *gorm.DB, req types.CreateMessageRequest, clientID int64, departmentID *int64, senderType string, now time.Time) (*model.Chat, error) {
