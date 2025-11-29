@@ -21,12 +21,16 @@ func (r *notificationRepoImpl) CreateNotificationTx(tx *gorm.DB, notification *m
 	return tx.Create(notification).Error
 }
 
+func (r *notificationRepoImpl) CreateNotificationStaffsTx(tx *gorm.DB, notificationStaffs []*model.NotificationStaff) error {
+	return tx.Create(notificationStaffs).Error
+}
+
 func (r *notificationRepoImpl) CreateNotificationStaffs(ctx context.Context, notificationStaffs []*model.NotificationStaff) error {
 	return r.db.WithContext(ctx).Create(notificationStaffs).Error
 }
 
-func (r *notificationRepoImpl) UpdateNotifications(ctx context.Context, notificationIDs []int64, updateData map[string]any) error {
-	return r.db.WithContext(ctx).Model(&model.Notification{}).Where("id IN ?", notificationIDs).Updates(updateData).Error
+func (r *notificationRepoImpl) UpdateReadNotificationsByOrderRoomTx(tx *gorm.DB, orderRoomID int64, updateData map[string]any) error {
+	return tx.Model(&model.Notification{}).Where("order_room_id = ? AND receiver = ? AND is_read = false", orderRoomID, "guest").Updates(updateData).Error
 }
 
 func (r *notificationRepoImpl) FindAllUnreadNotificationsByContentIDAndType(ctx context.Context, staffID, contentID int64, contentType string) ([]*model.Notification, error) {
@@ -42,22 +46,35 @@ func (r *notificationRepoImpl) FindAllUnreadNotificationsByContentIDAndType(ctx 
 	return notifications, nil
 }
 
-func (r *notificationRepoImpl) FindAllNotificationsByOrderRoomID(ctx context.Context, orderRoomID int64) ([]*model.Notification, error) {
+func (r *notificationRepoImpl) FindAllNotificationsByOrderRoomIDTx(tx *gorm.DB, orderRoomID int64) ([]*model.Notification, error) {
 	var notifications []*model.Notification
-	if err := r.db.WithContext(ctx).Where("order_room_id = ? AND receiver = ?", orderRoomID, "guest").Order("created_at DESC").Find(&notifications).Error; err != nil {
+	if err := tx.Model(&model.Notification{}).Where("order_room_id = ? AND receiver = ?", orderRoomID, "guest").Order("created_at DESC").Find(&notifications).Error; err != nil {
 		return nil, err
 	}
 
 	return notifications, nil
 }
 
-func (r *notificationRepoImpl) FindAllUnreadNotificationsByOrderRoomID(ctx context.Context, orderRoomID int64) ([]*model.Notification, error) {
-	var notifications []*model.Notification
-	if err := r.db.WithContext(ctx).Where("order_room_id = ? AND receiver = ? AND is_read = false", orderRoomID, "guest").Find(&notifications).Error; err != nil {
+func (r *notificationRepoImpl) FindAllUnreadNotificationIDsByOrderRoomIDTx(tx *gorm.DB, orderRoomID int64) ([]int64, error) {
+	var ids []int64
+	if err := tx.Model(&model.Notification{}).Where("order_room_id = ? AND receiver = ? AND is_read = false", orderRoomID, "guest").Pluck("id", &ids).Error; err != nil {
 		return nil, err
 	}
 
-	return notifications, nil
+	return ids, nil
+}
+
+func (r *notificationRepoImpl) FindAllUnreadNotificationIDsByDepartmentIDTx(tx *gorm.DB, staffID, departmentID int64) ([]int64, error) {
+	var ids []int64
+	if err := tx.Where("department_id = ? AND receiver = ?", departmentID, "staff").Where("id NOT IN (?)",
+		tx.Model(&model.NotificationStaff{}).
+			Select("notification_id").
+			Where("staff_id = ?", staffID),
+	).Model(&model.Notification{}).Pluck("id", &ids).Error; err != nil {
+		return nil, err
+	}
+
+	return ids, nil
 }
 
 func (r *notificationRepoImpl) FindAllUnreadNotificationsByDepartmentID(ctx context.Context, staffID, departmentID int64) ([]*model.Notification, error) {
@@ -100,11 +117,11 @@ func (r *notificationRepoImpl) UpdateNotificationsByOrderRoomIDAndType(ctx conte
 	return r.db.WithContext(ctx).Model(&model.Notification{}).Where("order_room_id = ? AND type = ? AND receiver = ?", orderRoomID, contentType, "guest").Updates(updateData).Error
 }
 
-func (r *notificationRepoImpl) FindAllNotificationsByDepartmentIDWithStaffsReadPaginated(ctx context.Context, query types.NotificationPaginationQuery, staffID, departmentID int64) ([]*model.Notification, int64, error) {
+func (r *notificationRepoImpl) FindAllNotificationsByDepartmentIDWithStaffsReadPaginatedTx(tx *gorm.DB, query types.NotificationPaginationQuery, staffID, departmentID int64) ([]*model.Notification, int64, error) {
 	var notifications []*model.Notification
 	var total int64
 
-	db := r.db.WithContext(ctx).Where("department_id = ? AND receiver = ?", departmentID, "staff").Model(&model.Notification{})
+	db := tx.Where("department_id = ? AND receiver = ?", departmentID, "staff").Model(&model.Notification{})
 	if err := db.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}

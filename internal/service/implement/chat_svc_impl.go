@@ -136,9 +136,35 @@ func (s *chatSvcImpl) GetChatsForGuest(ctx context.Context, orderRoomID int64) (
 func (s *chatSvcImpl) GetChatByID(ctx context.Context, chatID, userID, departmentID int64) (*model.Chat, error) {
 	var chat *model.Chat
 	if err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
-		if err := s.chatRepo.BulkCreateMessageStaffTx(tx, chatID, userID); err != nil {
-			s.logger.Error("bulk create message staff failed", zap.Error(err))
+		now := time.Now()
+
+		unreadMessageIDs, err := s.chatRepo.FindAllUnreadMessageIDsByChatIDAndSenderTypeTx(tx, chatID, userID, "guest")
+		if err != nil {
+			s.logger.Error("find all unread message ids failed", zap.Error(err))
 			return err
+		}
+
+		if len(unreadMessageIDs) > 0 {
+			messageStaffs := make([]*model.MessageStaff, 0, len(unreadMessageIDs))
+			for _, msgID := range unreadMessageIDs {
+				id, err := s.sfGen.NextID()
+				if err != nil {
+					s.logger.Error("generate message staff id failed", zap.Error(err))
+					return err
+				}
+
+				messageStaffs = append(messageStaffs, &model.MessageStaff{
+					ID:        id,
+					MessageID: msgID,
+					StaffID:   userID,
+					ReadAt:    now,
+				})
+			}
+
+			if err := s.chatRepo.CreateMessageStaffsTx(tx, messageStaffs); err != nil {
+				s.logger.Error("create message staffs failed", zap.Error(err))
+				return err
+			}
 		}
 
 		updateData := map[string]any{

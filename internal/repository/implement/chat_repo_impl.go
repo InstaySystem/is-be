@@ -38,18 +38,21 @@ func (r *chatRepoImpl) FindChatByIDTx(tx *gorm.DB, chatID int64) (*model.Chat, e
 	return &chat, nil
 }
 
-func (r *chatRepoImpl) BulkCreateMessageStaffTx(tx *gorm.DB, chatID, staffID int64) error {
-	query := `
-		INSERT INTO message_staffs (message_id, staff_id, read_at)
-		SELECT id, ?, NOW()
-		FROM messages
-		WHERE chat_id = ? 
-		AND NOT EXISTS (
-			SELECT 1 FROM message_staffs 
-			WHERE message_id = messages.id AND staff_id = ?
-		)
-	`
-	return tx.Exec(query, staffID, chatID, staffID).Error
+func (r *chatRepoImpl) FindAllUnreadMessageIDsByChatIDAndSenderTypeTx(tx *gorm.DB, chatID, staffID int64, senderType string) ([]int64, error) {
+	var ids []int64
+	if err := tx.Where("chat_id = ? AND sender_type", chatID, senderType).Where(
+		"id NOT IN (?)", tx.Model(&model.MessageStaff{}).
+			Select("message_id").
+			Where("staff_id = ?", staffID),
+	).Model(&model.Message{}).Pluck("id", &ids).Error; err != nil {
+		return nil, err
+	}
+
+	return ids, nil
+}
+
+func (r *chatRepoImpl) CreateMessageStaffsTx(tx *gorm.DB, messageStaffs []*model.MessageStaff) error {
+	return tx.Create(messageStaffs).Error
 }
 
 func (r *chatRepoImpl) UpdateChatTx(tx *gorm.DB, chatID int64, updateData map[string]any) error {

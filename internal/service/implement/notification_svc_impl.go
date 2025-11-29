@@ -10,20 +10,24 @@ import (
 	"github.com/InstaySystem/is-be/internal/types"
 	"github.com/InstaySystem/is-be/pkg/snowflake"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type notificationSvcImpl struct {
+	db               *gorm.DB
 	notificationRepo repository.Notification
 	logger           *zap.Logger
 	sfGen            snowflake.Generator
 }
 
 func NewNotificationService(
+	db *gorm.DB,
 	notificationRepo repository.Notification,
 	logger *zap.Logger,
 	sfGen snowflake.Generator,
 ) service.NotificationService {
 	return &notificationSvcImpl{
+		db,
 		notificationRepo,
 		logger,
 		sfGen,
@@ -31,33 +35,8 @@ func NewNotificationService(
 }
 
 func (s *notificationSvcImpl) GetNotificationsForAdmin(ctx context.Context, query types.NotificationPaginationQuery, userID, departmentID int64) ([]*model.Notification, *types.MetaResponse, error) {
-	unreadNotifications, err := s.notificationRepo.FindAllUnreadNotificationsByDepartmentID(ctx, userID, departmentID)
-	if err != nil {
-		s.logger.Error("find unread notifications by department id failed", zap.Error(err))
-		return nil, nil, err
-	}
-
-	if len(unreadNotifications) > 0 {
-		notificationStaffs := make([]*model.NotificationStaff, 0, len(unreadNotifications))
-		for _, notification := range unreadNotifications {
-			id, err := s.sfGen.NextID()
-			if err != nil {
-				s.logger.Error("generate notification staff id failed", zap.Error(err))
-				return nil, nil, err
-			}
-
-			notificationStaffs = append(notificationStaffs, &model.NotificationStaff{
-				ID:             id,
-				NotificationID: notification.ID,
-				StaffID:        userID,
-			})
-		}
-
-		if err = s.notificationRepo.CreateNotificationStaffs(ctx, notificationStaffs); err != nil {
-			s.logger.Error("create notification staffs failed", zap.Error(err))
-			return nil, nil, err
-		}
-	}
+	var notifications []*model.Notification
+	var total int64
 
 	if query.Page == 0 {
 		query.Page = 1
@@ -66,9 +45,43 @@ func (s *notificationSvcImpl) GetNotificationsForAdmin(ctx context.Context, quer
 		query.Limit = 10
 	}
 
-	notifications, total, err := s.notificationRepo.FindAllNotificationsByDepartmentIDWithStaffsReadPaginated(ctx, query, userID, departmentID)
-	if err != nil {
-		s.logger.Error("find all notifications by department id paginated failed", zap.Error(err))
+	if err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		unreadNotificationIDs, err := s.notificationRepo.FindAllUnreadNotificationIDsByDepartmentIDTx(tx, userID, departmentID)
+		if err != nil {
+			s.logger.Error("find all unread notification ids by department id failed", zap.Error(err))
+			return err
+		}
+
+		if len(unreadNotificationIDs) > 0 {
+			notificationStaffs := make([]*model.NotificationStaff, 0, len(unreadNotificationIDs))
+			for _, notificationID := range unreadNotificationIDs {
+				id, err := s.sfGen.NextID()
+				if err != nil {
+					s.logger.Error("generate notification staff id failed", zap.Error(err))
+					return err
+				}
+
+				notificationStaffs = append(notificationStaffs, &model.NotificationStaff{
+					ID:             id,
+					NotificationID: notificationID,
+					StaffID:        userID,
+				})
+			}
+
+			if err = s.notificationRepo.CreateNotificationStaffsTx(tx, notificationStaffs); err != nil {
+				s.logger.Error("create notification staffs failed", zap.Error(err))
+				return err
+			}
+		}
+
+		notifications, total, err = s.notificationRepo.FindAllNotificationsByDepartmentIDWithStaffsReadPaginatedTx(tx, query, userID, departmentID)
+		if err != nil {
+			s.logger.Error("find all notifications by department id paginated failed", zap.Error(err))
+			return err
+		}
+
+		return nil
+	}); err != nil {
 		return nil, nil, err
 	}
 
@@ -100,31 +113,38 @@ func (s *notificationSvcImpl) CountUnreadNotificationsForAdmin(ctx context.Conte
 }
 
 func (s *notificationSvcImpl) GetNotificationsForGuest(ctx context.Context, orderRoomID int64) ([]*model.Notification, error) {
-	unreadNotifications, err := s.notificationRepo.FindAllUnreadNotificationsByOrderRoomID(ctx, orderRoomID)
-	if err != nil {
-		s.logger.Error("find unread notifications by order room id failed", zap.Error(err))
-		return nil, err
-	}
-
-	if len(unreadNotifications) > 0 {
-		notificationIDs := []int64{}
-		for _, notification := range unreadNotifications {
-			notificationIDs = append(notificationIDs, notification.ID)
+	var notifications []*model.Notification
+	if err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		unreadNotificationIDs, err := s.notificationRepo.FindAllUnreadNotificationIDsByOrderRoomIDTx(tx, orderRoomID)
+		if err != nil {
+			s.logger.Error("find all unread notification ids by order room id failed", zap.Error(err))
+			return err
 		}
 
-		updateData := map[string]any{
-			"is_read": true,
-			"read_at": time.Now(),
-		}
-		if err = s.notificationRepo.UpdateNotifications(ctx, notificationIDs, updateData); err != nil {
-			s.logger.Error("update notifications failed", zap.Error(err))
-			return nil, err
-		}
-	}
+		if len(unreadNotificationIDs) > 0 {
+			notificationIDs := []int64{}
+			for _, notificationID := range unreadNotificationIDs {
+				notificationIDs = append(notificationIDs, notificationID)
+			}
 
-	notifications, err := s.notificationRepo.FindAllNotificationsByOrderRoomID(ctx, orderRoomID)
-	if err != nil {
-		s.logger.Error("find all notifications by order room id failed", zap.Error(err))
+			updateData := map[string]any{
+				"is_read": true,
+				"read_at": time.Now(),
+			}
+			if err = s.notificationRepo.UpdateReadNotificationsByOrderRoomTx(tx, orderRoomID, updateData); err != nil {
+				s.logger.Error("update read notifications failed", zap.Error(err))
+				return err
+			}
+		}
+
+		notifications, err = s.notificationRepo.FindAllNotificationsByOrderRoomIDTx(tx, orderRoomID)
+		if err != nil {
+			s.logger.Error("find all notifications by order room id failed", zap.Error(err))
+			return err
+		}
+
+		return nil
+	}); err != nil {
 		return nil, err
 	}
 
