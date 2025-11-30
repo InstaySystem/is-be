@@ -40,7 +40,7 @@ func (r *chatRepoImpl) FindChatByIDTx(tx *gorm.DB, chatID int64) (*model.Chat, e
 
 func (r *chatRepoImpl) FindAllUnreadMessageIDsByChatIDAndSenderTypeTx(tx *gorm.DB, chatID, staffID int64, senderType string) ([]int64, error) {
 	var ids []int64
-	if err := tx.Where("chat_id = ? AND sender_type", chatID, senderType).Where(
+	if err := tx.Where("chat_id = ? AND sender_type = ?", chatID, senderType).Where(
 		"id NOT IN (?)", tx.Model(&model.MessageStaff{}).
 			Select("message_id").
 			Where("staff_id = ?", staffID),

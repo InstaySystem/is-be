@@ -1,9 +1,16 @@
 ## GET STARTED
 
-**Require Go version 1.25+**
+**With Golang (require version 1.25+)**
 
 ```bash
 make run
+```
+
+**With Docker**
+
+```bash
+docker build -t instay-be .
+docker run -d -p 8080:8080 --name instay instay-be
 ```
 
 ### Project Structure
@@ -36,10 +43,12 @@ make run
 │   │   ├── 🐹 notification_container.go
 │   │   ├── 🐹 order_container.go
 │   │   ├── 🐹 request_container.go
+│   │   ├── 🐹 review_container.go
 │   │   ├── 🐹 room_container.go
 │   │   ├── 🐹 service_container.go
 │   │   ├── 🐹 sse_container.go
-│   │   └── 🐹 user_container.go
+│   │   ├── 🐹 user_container.go
+│   │   └── 🐹 ws_container.go
 │   ├── 📁 handler
 │   │   ├── 🐹 auth_handler.go
 │   │   ├── 🐹 booking_handler.go
@@ -49,6 +58,7 @@ make run
 │   │   ├── 🐹 notification_handler.go
 │   │   ├── 🐹 order_handler.go
 │   │   ├── 🐹 request_handler.go
+│   │   ├── 🐹 review_handler.go
 │   │   ├── 🐹 room_handler.go
 │   │   ├── 🐹 service_handler.go
 │   │   ├── 🐹 sse_handler.go
@@ -74,6 +84,7 @@ make run
 │   │   ├── 🐹 notification_model.go
 │   │   ├── 🐹 order_model.go
 │   │   ├── 🐹 request_model.go
+│   │   ├── 🐹 review_model.go
 │   │   ├── 🐹 room_model.go
 │   │   ├── 🐹 service_model.go
 │   │   └── 🐹 user_model.go
@@ -94,6 +105,7 @@ make run
 │   │   │   ├── 🐹 notification_repo_impl.go
 │   │   │   ├── 🐹 order_repo_impl.go
 │   │   │   ├── 🐹 request_repo_impl.go
+│   │   │   ├── 🐹 review_repo_impl.go
 │   │   │   ├── 🐹 room_repo_impl.go
 │   │   │   ├── 🐹 service_repo_impl.go
 │   │   │   └── 🐹 user_repo_impl.go
@@ -103,17 +115,20 @@ make run
 │   │   ├── 🐹 notification_repository.go
 │   │   ├── 🐹 order_repository.go
 │   │   ├── 🐹 request_repository.go
+│   │   ├── 🐹 review_repository.go
 │   │   ├── 🐹 room_repository.go
 │   │   ├── 🐹 service_repository.go
 │   │   └── 🐹 user_repository.go
 │   ├── 📁 router
 │   │   ├── 🐹 auth_router.go
 │   │   ├── 🐹 booking_router.go
+│   │   ├── 🐹 chat_router.go
 │   │   ├── 🐹 department.go
 │   │   ├── 🐹 file_router.go
 │   │   ├── 🐹 notification_router.go
 │   │   ├── 🐹 order_router.go
 │   │   ├── 🐹 request_router.go
+│   │   ├── 🐹 review_router.go
 │   │   ├── 🐹 room_router.go
 │   │   ├── 🐹 service_router.go
 │   │   ├── 🐹 sse_router.go
@@ -131,6 +146,7 @@ make run
 │   │   │   ├── 🐹 notification_svc_impl.go
 │   │   │   ├── 🐹 order_svc_impl.go
 │   │   │   ├── 🐹 request_svc_impl.go
+│   │   │   ├── 🐹 review_svc_impl.go
 │   │   │   ├── 🐹 room_svc_impl.go
 │   │   │   ├── 🐹 service_svc_impl.go
 │   │   │   └── 🐹 user_svc_impl.go
@@ -142,6 +158,7 @@ make run
 │   │   ├── 🐹 notification_service.go
 │   │   ├── 🐹 order_service.go
 │   │   ├── 🐹 request_service.go
+│   │   ├── 🐹 review_service.go
 │   │   ├── 🐹 room_service.go
 │   │   ├── 🐹 service_service.go
 │   │   └── 🐹 user_service.go
@@ -160,6 +177,7 @@ make run
 │   └── 📁 snowflake
 │       └── 🐹 snowflake.go
 ├── ⚙️ .gitignore
+├── 🐳 Dockerfile
 ├── 📄 Makefile
 ├── 📝 README.md
 ├── 📄 go.mod
