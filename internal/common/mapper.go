@@ -837,8 +837,15 @@ func ToMessageStaffResponse(messageStaff *model.MessageStaff) *types.MessageStaf
 }
 
 func ToSimpleMessageResponse(message *model.Message) *types.SimpleMessageResponse {
-	if message == nil {
+if message == nil {
 		return nil
+	}
+
+	var staffRead *types.MessageStaffResponse
+	if len(message.StaffsRead) > 0 {
+		staffRead = ToMessageStaffResponse(message.StaffsRead[0])
+	} else {
+		staffRead = nil 
 	}
 
 	return &types.SimpleMessageResponse{
@@ -850,7 +857,7 @@ func ToSimpleMessageResponse(message *model.Message) *types.SimpleMessageRespons
 		CreatedAt:  message.CreatedAt,
 		IsRead:     message.IsRead,
 		ReadAt:     message.ReadAt,
-		StaffRead:  ToMessageStaffResponse(message.StaffsRead[0]),
+		StaffRead:  staffRead,
 	}
 }
 

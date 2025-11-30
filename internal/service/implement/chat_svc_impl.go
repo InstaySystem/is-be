@@ -253,12 +253,22 @@ func (s *chatSvcImpl) getOrCreateChat(tx *gorm.DB, req types.CreateMessageReques
 		return nil, errors.New("receiverid is required for new chat")
 	}
 
-	orderRoomID := clientID
-	if senderType == "staff" {
-		orderRoomID = *req.ReceiverID
+	var targetOrderRoomID int64
+	var targetDepartmentID int64
+
+	if senderType == "guest" {
+		targetOrderRoomID = clientID
+		targetDepartmentID = *req.ReceiverID
+	} else {
+		targetOrderRoomID = *req.ReceiverID
+
+		if departmentID == nil {
+			return nil, errors.New("staff must belong to a department to create chat")
+		}
+		targetDepartmentID = *departmentID
 	}
 
-	orderRoom, err := s.orderRepo.FindOrderRoomByIDWithBookingTx(tx, orderRoomID)
+	orderRoom, err := s.orderRepo.FindOrderRoomByIDWithBookingTx(tx, targetOrderRoomID)
 	if err != nil {
 		return nil, common.ErrOrderRoomNotFound
 	}
@@ -269,15 +279,11 @@ func (s *chatSvcImpl) getOrCreateChat(tx *gorm.DB, req types.CreateMessageReques
 		return nil, err
 	}
 
-	if departmentID == nil {
-		return nil, errors.New("department_id is required")
-	}
-
 	chat := &model.Chat{
 		ID:            chatID,
 		Code:          common.GenerateCode(5),
-		OrderRoomID:   orderRoomID,
-		DepartmentID:  *departmentID,
+		OrderRoomID:   targetOrderRoomID,
+		DepartmentID:  targetDepartmentID,
 		ExpiredAt:     orderRoom.Booking.CheckOut,
 		CreatedAt:     now,
 		LastMessageAt: now,
