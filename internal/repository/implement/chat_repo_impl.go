@@ -73,14 +73,18 @@ func (r *chatRepoImpl) FindAllChatsByDepartmentIDWithDetailsPaginated(ctx contex
 	}
 
 	offset := (query.Page - 1) * query.Limit
-	if err := db.Order("last_message_at DESC").Limit(int(query.Limit)).Offset(int(offset)).Preload("OrderRoom.Room").Preload("OrderRoom.Booking").
+	if err := db.Order("last_message_at DESC").
+		Limit(int(query.Limit)).
+		Offset(int(offset)).
+		Preload("OrderRoom.Room").
+		Preload("OrderRoom.Booking").
 		Preload("Messages", func(db *gorm.DB) *gorm.DB {
-			return db.Raw(`
-				SELECT m.* FROM messages m
-				JOIN chats c ON m.chat_id = c.id
-				WHERE m.created_at = c.last_message_at
-			`)
-		}).Preload("Messages.Sender").Preload("Messages.StaffsRead", "staff_id = ?", staffID).Find(&chats).Error; err != nil {
+			return db.Select("messages.*").
+				Joins("JOIN chats ON chats.id = messages.chat_id AND chats.last_message_at = messages.created_at")
+		}).
+		Preload("Messages.Sender").
+		Preload("Messages.StaffsRead", "staff_id = ?", staffID).
+		Find(&chats).Error; err != nil {
 		return nil, 0, err
 	}
 
@@ -123,14 +127,15 @@ func (r *chatRepoImpl) FindChatByCodeWithDetails(ctx context.Context, chatCode s
 
 func (r *chatRepoImpl) FindAllChatsByOrderRoomIDWithDetails(ctx context.Context, orderRoomID int64) ([]*model.Chat, error) {
 	var chats []*model.Chat
-	if err := r.db.WithContext(ctx).Where("order_room_id = ?", orderRoomID).Order("last_message_at DESC").
-		Preload("Department").Preload("Messages", func(db *gorm.DB) *gorm.DB {
-		return db.Raw(`
-				SELECT m.* FROM messages m
-				JOIN chats c ON m.chat_id = c.id
-				WHERE m.created_at = c.last_message_at
-			`)
-	}).Find(&chats).Error; err != nil {
+	if err := r.db.WithContext(ctx).
+		Where("order_room_id = ?", orderRoomID).
+		Order("last_message_at DESC").
+		Preload("Department").
+		Preload("Messages", func(db *gorm.DB) *gorm.DB {
+			return db.Select("messages.*").
+				Joins("JOIN chats ON chats.id = messages.chat_id AND chats.last_message_at = messages.created_at")
+		}).
+		Find(&chats).Error; err != nil {
 		return nil, err
 	}
 
