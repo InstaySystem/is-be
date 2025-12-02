@@ -76,3 +76,26 @@ func (h *ReviewHandler) GetMyReview(c *gin.Context) {
 		"review": common.ToSimpleReviewResponse(review),
 	})
 }
+
+func (h *ReviewHandler) GetReviews(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	var query types.ReviewPaginationQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		mess := common.HandleValidationError(err)
+		common.ToAPIResponse(c, http.StatusBadRequest, mess, nil)
+		return
+	}
+
+	reviews, meta, err := h.reviewSvc.GetReviews(ctx, query)
+	if err != nil {
+		common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
+		return
+	}
+
+	common.ToAPIResponse(c, http.StatusOK, "Get review list successfully", gin.H{
+		"reviews": common.ToReviewsResponse(reviews),
+		"meta":    meta,
+	})
+}

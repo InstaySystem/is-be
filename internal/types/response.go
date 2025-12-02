@@ -363,7 +363,7 @@ type SimpleChatWithMessageResponse struct {
 
 type BasicChatResponse struct {
 	ID          int64                     `json:"id"`
-	Code        string                   `json:"code"`
+	Code        string                    `json:"code"`
 	Department  *SimpleDepartmentResponse `json:"department"`
 	ExpiredAt   time.Time                 `json:"expired_at"`
 	LastMessage *BasicMessageResponse     `json:"last_message"`
@@ -414,4 +414,14 @@ type SimpleReviewResponse struct {
 	Star      uint32    `json:"star"`
 	Content   string    `json:"content"`
 	CreatedAt time.Time `json:"created_at"`
+}
+
+type ReviewResponse struct {
+	ID          int64     `json:"id"`
+	Email       string    `json:"email"`
+	Star        uint32    `json:"star"`
+	Content     string    `json:"content"`
+	CreatedAt   time.Time `json:"created_at"`
+	UpdatedAt   time.Time `json:"updated_at"`
+	OrderRoomID int64     `json:"order_room_id"`
 }

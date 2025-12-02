@@ -115,7 +115,7 @@ func (s *userSvcImpl) GetUsers(ctx context.Context, query types.UserPaginationQu
 
 	users, total, err := s.userRepo.FindAllWithDepartmentPaginated(ctx, query)
 	if err != nil {
-		s.logger.Error("find all user paginated failed", zap.Error(err))
+		s.logger.Error("find all users paginated failed", zap.Error(err))
 		return nil, nil, err
 	}
 

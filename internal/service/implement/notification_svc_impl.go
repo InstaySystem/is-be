@@ -117,7 +117,7 @@ func (s *notificationSvcImpl) GetNotificationsForGuest(ctx context.Context, orde
 	if err := s.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		unreadNotificationIDs, err := s.notificationRepo.FindAllUnreadNotificationIDsByOrderRoomIDTx(tx, orderRoomID)
 		if err != nil {
-			s.logger.Error("find all unread notification ids by order room id failed", zap.Error(err))
+			s.logger.Error("find all unread notifications ids by order room id failed", zap.Error(err))
 			return err
 		}
 

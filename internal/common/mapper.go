@@ -837,7 +837,7 @@ func ToMessageStaffResponse(messageStaff *model.MessageStaff) *types.MessageStaf
 }
 
 func ToSimpleMessageResponse(message *model.Message) *types.SimpleMessageResponse {
-if message == nil {
+	if message == nil {
 		return nil
 	}
 
@@ -845,7 +845,7 @@ if message == nil {
 	if len(message.StaffsRead) > 0 {
 		staffRead = ToMessageStaffResponse(message.StaffsRead[0])
 	} else {
-		staffRead = nil 
+		staffRead = nil
 	}
 
 	return &types.SimpleMessageResponse{
@@ -966,4 +966,33 @@ func ToSimpleReviewResponse(review *model.Review) *types.SimpleReviewResponse {
 		Content:   review.Content,
 		CreatedAt: review.CreatedAt,
 	}
+}
+
+func ToReviewResponse(review *model.Review) *types.ReviewResponse {
+	if review == nil {
+		return nil
+	}
+
+	return &types.ReviewResponse{
+		ID:          review.ID,
+		Email:       review.Email,
+		Star:        review.Star,
+		Content:     review.Content,
+		CreatedAt:   review.CreatedAt,
+		UpdatedAt:   review.UpdatedAt,
+		OrderRoomID: review.OrderRoomID,
+	}
+}
+
+func ToReviewsResponse(reviews []*model.Review) []*types.ReviewResponse {
+	if len(reviews) == 0 {
+		return make([]*types.ReviewResponse, 0)
+	}
+
+	reviewsRes := make([]*types.ReviewResponse, 0, len(reviews))
+	for _, review := range reviews {
+		reviewsRes = append(reviewsRes, ToReviewResponse(review))
+	}
+
+	return reviewsRes
 }

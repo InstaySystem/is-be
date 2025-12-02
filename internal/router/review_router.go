@@ -7,7 +7,11 @@ import (
 )
 
 func ReviewRouter(rg *gin.RouterGroup, hdl *handler.ReviewHandler, authMid *middleware.AuthMiddleware) {
-	guest := rg.Group("/admin", authMid.IsAuthentication(), authMid.HasGuestToken())
+	admin := rg.Group("/admin/reviews", authMid.IsAuthentication(), authMid.HasDepartment("customer care")) 
+	{
+		admin.GET("", hdl.GetReviews)
+	}
+	guest := rg.Group("/reviews", authMid.IsAuthentication(), authMid.HasGuestToken())
 	{
 		guest.POST("", hdl.CreateReview)
 

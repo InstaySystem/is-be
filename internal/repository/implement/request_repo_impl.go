@@ -213,16 +213,7 @@ func applyRequestSorting(db *gorm.DB, query types.RequestPaginationQuery) *gorm.
 		query.Order = "desc"
 	}
 
-	allowedSorts := map[string]bool{
-		"created_at": true,
-		"code":       true,
-	}
-
-	if allowedSorts[query.Sort] {
-		db = db.Order(query.Sort + " " + strings.ToUpper(query.Order))
-	} else {
-		db = db.Order("created_at DESC")
-	}
+	db = db.Order("created_at " + strings.ToUpper(query.Order))
 
 	return db
 }

@@ -36,7 +36,7 @@ func (s *bookingSvcImpl) GetBookings(ctx context.Context, query types.BookingPag
 
 	bookings, total, err := s.bookingRepo.FindAllPaginated(ctx, query)
 	if err != nil {
-		s.logger.Error("find all booking paginated failed", zap.Error(err))
+		s.logger.Error("find all bookings paginated failed", zap.Error(err))
 		return nil, nil, err
 	}
 
