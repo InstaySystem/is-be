@@ -9,6 +9,8 @@ var (
 
 	ErrPhoneAlreadyExists = errors.New("phone number already exists")
 
+	ErrChatAlreadyExists = errors.New("chat already exists")
+
 	ErrUserNotFound = errors.New("user not found")
 
 	ErrLoginFailed = errors.New("incorrect username or password")

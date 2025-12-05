@@ -290,6 +290,9 @@ func (s *chatSvcImpl) getOrCreateChat(tx *gorm.DB, req types.CreateMessageReques
 	}
 
 	if err = s.chatRepo.CreateChatTx(tx, chat); err != nil {
+		if ok, _ := common.IsUniqueViolation(err); ok {
+			return nil, common.ErrChatAlreadyExists
+		}
 		s.logger.Error("create chat failed", zap.Error(err))
 		return nil, err
 	}

@@ -5,8 +5,8 @@ import "time"
 type Chat struct {
 	ID            int64     `gorm:"type:bigint;primaryKey" json:"id"`
 	Code          string    `gorm:"type:char(10);not null;uniqueIndex:chats_code_key" json:"code"`
-	OrderRoomID   int64     `gorm:"type:bigint;not null" json:"order_room_id"`
-	DepartmentID  int64     `gorm:"type:bigint;not null" json:"department_id"`
+	OrderRoomID   int64     `gorm:"type:bigint;not null;uniqueIndex:chats_order_room_id_department_id_key" json:"order_room_id"`
+	DepartmentID  int64     `gorm:"type:bigint;not null;uniqueIndex:chats_order_room_id_department_id_key" json:"department_id"`
 	CreatedAt     time.Time `json:"created_at"`
 	ExpiredAt     time.Time `json:"expired_at"`
 	LastMessageAt time.Time `gorm:"not null;index:chats_last_message_at_idx" json:"last_message_at"`

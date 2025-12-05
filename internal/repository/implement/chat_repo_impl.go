@@ -76,8 +76,8 @@ func (r *chatRepoImpl) FindAllChatsByDepartmentIDWithDetailsPaginated(ctx contex
 	if err := db.Order("last_message_at DESC").
 		Limit(int(query.Limit)).
 		Offset(int(offset)).
-		Preload("OrderRoom.Room").
-		Preload("OrderRoom.Booking").
+		Preload("OrderRoom.Room.Floor").
+		Preload("OrderRoom.Booking.Source").
 		Preload("Messages", func(db *gorm.DB) *gorm.DB {
 			return db.Select("messages.*").
 				Joins("JOIN chats ON chats.id = messages.chat_id AND chats.last_message_at = messages.created_at")
@@ -95,8 +95,8 @@ func (r *chatRepoImpl) FindChatByIDWithDetails(ctx context.Context, chatID, staf
 	var chat model.Chat
 
 	if err := r.db.WithContext(ctx).
-		Preload("OrderRoom.Room").
-		Preload("OrderRoom.Booking").
+		Preload("OrderRoom.Room.Floor").
+		Preload("OrderRoom.Booking.Source").
 		Preload("Messages", func(db *gorm.DB) *gorm.DB {
 			return db.Order("created_at ASC")
 		}).

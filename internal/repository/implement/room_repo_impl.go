@@ -88,9 +88,9 @@ func (r *roomRepoImpl) FindRoomByIDWithActiveOrderRooms(ctx context.Context, roo
 	now := time.Now()
 
 	if err := r.db.WithContext(ctx).
-		Preload("OrderRooms", "booking.check_in <= ? AND booking.check_out >= ?", now, now).
-		Preload("OrderRooms.Booking").
-		Where("id = ?", roomID).First(&room).Error; err != nil {
+		Preload("OrderRooms", func(db *gorm.DB) *gorm.DB {
+			return db.Joins("JOIN bookings ON bookings.id = order_rooms.booking_id").Where("bookings.check_in <= ? AND bookings.check_out >= ?", now, now)
+		}).Preload("OrderRooms.Booking").Where("rooms.id = ?", roomID).First(&room).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, nil
 		}
