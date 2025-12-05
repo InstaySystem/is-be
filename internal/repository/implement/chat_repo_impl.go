@@ -60,7 +60,7 @@ func (r *chatRepoImpl) UpdateChatTx(tx *gorm.DB, chatID int64, updateData map[st
 }
 
 func (r *chatRepoImpl) UpdateMessagesByChatIDAndSenderTypeTx(tx *gorm.DB, chatID int64, senderType string, updateData map[string]any) error {
-	return tx.Model(&model.Message{}).Where("id = ? AND sender_type = ? AND is_read = false", chatID, senderType).Updates(updateData).Error
+	return tx.Model(&model.Message{}).Where("chat_id = ? AND sender_type = ? AND is_read = false", chatID, senderType).Updates(updateData).Error
 }
 
 func (r *chatRepoImpl) FindAllChatsByDepartmentIDWithDetailsPaginated(ctx context.Context, query types.ChatPaginationQuery, staffID, departmentID int64) ([]*model.Chat, int64, error) {
