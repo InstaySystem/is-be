@@ -100,6 +100,29 @@ func (r *roomRepoImpl) FindRoomByIDWithActiveOrderRooms(ctx context.Context, roo
 	return &room, nil
 }
 
+func (r *roomRepoImpl) FindRoomsWithActiveOrFutureBookings(ctx context.Context) ([]*model.Room, error) {
+	var rooms []*model.Room
+	now := time.Now()
+
+	if err := r.db.WithContext(ctx).
+		Joins("JOIN order_rooms ON order_rooms.room_id = rooms.id").
+		Joins("JOIN bookings ON bookings.id = order_rooms.booking_id").
+		Where("bookings.check_out >= ?", now).
+		Group("rooms.id").
+		Preload("OrderRooms", func(db *gorm.DB) *gorm.DB {
+			return db.
+				Joins("JOIN bookings ON bookings.id = order_rooms.booking_id").
+				Where("bookings.check_out >= ?", now).
+				Order("bookings.check_in ASC")
+		}).
+		Preload("OrderRooms.Booking").
+		Find(&rooms).Error; err != nil {
+		return nil, err
+	}
+
+	return rooms, nil
+}
+
 func (r *roomRepoImpl) FindFloorByName(ctx context.Context, floorName string) (*model.Floor, error) {
 	var floor model.Floor
 	if err := r.db.WithContext(ctx).Where("name = ?", floorName).First(&floor).Error; err != nil {

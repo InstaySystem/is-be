@@ -24,6 +24,8 @@ type RoomRepository interface {
 
 	FindRoomByIDWithActiveOrderRooms(ctx context.Context, roomID int64) (*model.Room, error)
 
+	FindRoomsWithActiveOrFutureBookings(ctx context.Context) ([]*model.Room, error)
+
 	FindFloorByName(ctx context.Context, floorName string) (*model.Floor, error)
 
 	CreateFloor(ctx context.Context, floor *model.Floor) error

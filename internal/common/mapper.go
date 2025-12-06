@@ -981,6 +981,68 @@ func ToSimpleChatResponse(chat *model.Chat) *types.SimpleChatResponse {
 	}
 }
 
+func ToBasicBookingResponse(booking *model.Booking) *types.BasicBookingResponse {
+	if booking == nil {
+		return nil
+	}
+
+	return &types.BasicBookingResponse{
+		ID:            booking.ID,
+		BookingNumber: booking.BookingNumber,
+		CheckIn:       booking.CheckIn,
+		CheckOut:      booking.CheckOut,
+	}
+}
+
+func ToBasicOrderRoomWithBasicBookingResponse(orderRoom *model.OrderRoom) *types.BasicOrderRoomWithBasicBookingResponse {
+	if orderRoom == nil {
+		return nil
+	}
+
+	return &types.BasicOrderRoomWithBasicBookingResponse{
+		ID:      orderRoom.ID,
+		Booking: ToBasicBookingResponse(orderRoom.Booking),
+	}
+}
+
+func ToBasicOrderRoomsWithBasicBookingResponse(orderRooms []*model.OrderRoom) []*types.BasicOrderRoomWithBasicBookingResponse {
+	if len(orderRooms) == 0 {
+		return make([]*types.BasicOrderRoomWithBasicBookingResponse, 0)
+	}
+
+	orderRoomsRes := make([]*types.BasicOrderRoomWithBasicBookingResponse, 0, len(orderRooms))
+	for _, orderRoom := range orderRooms {
+		orderRoomsRes = append(orderRoomsRes, ToBasicOrderRoomWithBasicBookingResponse(orderRoom))
+	}
+
+	return orderRoomsRes
+}
+
+func ToBasicRoomWithBasicOrderRoomsResponse(room *model.Room) *types.BasicRoomWithBasicOrderRoomsResponse {
+	if room == nil {
+		return nil
+	}
+
+	return &types.BasicRoomWithBasicOrderRoomsResponse{
+		ID:         room.ID,
+		Name:       room.Name,
+		OrderRooms: ToBasicOrderRoomsWithBasicBookingResponse(room.OrderRooms),
+	}
+}
+
+func ToBasicRoomsWithBasicOrderRoomsResponse(rooms []*model.Room) []*types.BasicRoomWithBasicOrderRoomsResponse {
+	if len(rooms) == 0 {
+		return make([]*types.BasicRoomWithBasicOrderRoomsResponse, 0)
+	}
+
+	roomsRes := make([]*types.BasicRoomWithBasicOrderRoomsResponse, 0, len(rooms))
+	for _, room := range rooms {
+		roomsRes = append(roomsRes, ToBasicRoomWithBasicOrderRoomsResponse(room))
+	}
+
+	return roomsRes
+}
+
 func ToSimpleChatsResponse(chats []*model.Chat) []*types.SimpleChatResponse {
 	if len(chats) == 0 {
 		return make([]*types.SimpleChatResponse, 0)

@@ -214,7 +214,22 @@ func (h *RoomHandler) GetRooms(c *gin.Context) {
 
 	common.ToAPIResponse(c, http.StatusOK, "Get room list successfully", gin.H{
 		"rooms": common.ToRoomsResponse(rooms),
-		"meta":     meta,
+		"meta":  meta,
+	})
+}
+
+func (h *RoomHandler) GetRoomsWithOrderRooms(c *gin.Context) {
+	ctx, cancel := context.WithTimeout(c.Request.Context(), 5*time.Second)
+	defer cancel()
+
+	rooms, err := h.roomSvc.GetRoomsWithOrderRooms(ctx)
+	if err != nil {
+		common.ToAPIResponse(c, http.StatusInternalServerError, "internal server error", nil)
+		return
+	}
+
+	common.ToAPIResponse(c, http.StatusOK, "Get rooms with order rooms successfully", gin.H{
+		"rooms": common.ToBasicRoomsWithBasicOrderRoomsResponse(rooms),
 	})
 }
 

@@ -182,6 +182,13 @@ type OrderRoomResponse struct {
 	Booking   *SimpleBookingResponse `json:"booking"`
 }
 
+type BasicBookingResponse struct {
+	ID            int64     `json:"id"`
+	BookingNumber string    `json:"booking_number"`
+	CheckIn       time.Time `json:"check_in"`
+	CheckOut      time.Time `json:"check_out"`
+}
+
 type BookingResponse struct {
 	ID                 int64                     `json:"id"`
 	BookingNumber      string                    `json:"booking_number"`
@@ -217,6 +224,12 @@ type FloorResponse struct {
 type SimpleRoomTypeResponse struct {
 	ID   int64  `json:"id"`
 	Name string `json:"name"`
+}
+
+type BasicRoomWithBasicOrderRoomsResponse struct {
+	ID         int64                                     `json:"id"`
+	Name       string                                    `json:"name"`
+	OrderRooms []*BasicOrderRoomWithBasicBookingResponse `json:"order_rooms"`
 }
 
 type SimpleRoomResponse struct {
@@ -279,6 +292,11 @@ type OrderServiceResponse struct {
 type BasicOrderRoomResponse struct {
 	ID   int64               `json:"id"`
 	Room *SimpleRoomResponse `json:"room"`
+}
+
+type BasicOrderRoomWithBasicBookingResponse struct {
+	ID      int64                 `json:"id"`
+	Booking *BasicBookingResponse `json:"booking"`
 }
 
 type SimpleOrderRoomResponse struct {
