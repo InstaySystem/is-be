@@ -35,6 +35,17 @@ func (r *requestRepoImpl) FindAllRequestTypesWithDetails(ctx context.Context) ([
 	return requestTypes, nil
 }
 
+func (r *requestRepoImpl) RequestStatusDistribution(ctx context.Context) ([]*types.StatusChartResponse, error) {
+	var results []*types.StatusChartResponse
+
+	if err := r.db.WithContext(ctx).Model(&model.Request{}).Select("status, COUNT(*) as count").Group("status").Scan(&results).Error; err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+
 func (r *requestRepoImpl) FindAllRequestTypes(ctx context.Context) ([]*model.RequestType, error) {
 	var requestTypes []*model.RequestType
 	if err := r.db.WithContext(ctx).Order("name ASC").Find(&requestTypes).Error; err != nil {

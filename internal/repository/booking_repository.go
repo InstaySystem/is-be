@@ -18,6 +18,10 @@ type BookingRepository interface {
 
 	FindSourceByName(ctx context.Context, sourceName string) (*model.Source, error)
 
+	SumBookingTotalSellPrice(ctx context.Context) (float64, error)
+
+	CountBooking(ctx context.Context) (int64, error)
+
 	CreateSource(ctx context.Context, source *model.Source) error
 
 	FindAllSources(ctx context.Context) ([]*model.Source, error)

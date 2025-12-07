@@ -83,6 +83,15 @@ func (r *userRepoImpl) ExistsByEmail(ctx context.Context, email string) (bool, e
 	return count > 0, nil
 }
 
+func(r *userRepoImpl) Count(ctx context.Context) (int64, error) {
+	var count int64
+	if err := r.db.WithContext(ctx).Model(&model.User{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func (r *userRepoImpl) CountActiveAdminExceptID(ctx context.Context, id int64) (int64, error) {
 	var count int64
 	if err := r.db.WithContext(ctx).Model(&model.User{}).Where("role = 'admin' AND is_active = true AND id <> ?", id).Count(&count).Error; err != nil {

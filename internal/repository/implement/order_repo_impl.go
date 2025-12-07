@@ -42,6 +42,16 @@ func (r *orderRepoImpl) FindOrderRoomByIDWithRoom(ctx context.Context, orderRoom
 	return &orderRoom, nil
 }
 
+func (r *orderRepoImpl) OrderServiceStatusDistribution(ctx context.Context) ([]*types.StatusChartResponse, error) {
+	var results []*types.StatusChartResponse
+
+	if err := r.db.WithContext(ctx).Model(&model.OrderService{}).Select("status, COUNT(*) as count").Group("status").Scan(&results).Error; err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
 func (r *orderRepoImpl) FindOrderRoomByIDWithBookingTx(tx *gorm.DB, orderRoomID int64) (*model.OrderRoom, error) {
 	var orderRoom model.OrderRoom
 	if err := tx.Preload("Booking").Where("id = ?", orderRoomID).First(&orderRoom).Error; err != nil {

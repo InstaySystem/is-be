@@ -33,6 +33,7 @@ type Container struct {
 	NotificationCtn *NotificationContainer
 	ChatCtn         *ChatContainer
 	ReviewCtn       *ReviewContainer
+	DashboardCtn    *DashboardContainer
 	SSECtn          *SSEContainer
 	WSCtn           *WSContainer
 	AuthMid         *middleware.AuthMiddleware
@@ -86,6 +87,7 @@ func NewContainer(
 	notificationCtn := NewNotificationContainer(db, notificationRepo, logger, sfGen)
 	chatCtn := NewChatContainer(db, chatRepo, orderRepo, sfGen, logger)
 	reviewCtn := NewReviewContainer(reviewRepo, sfGen, logger)
+	dashboardCtn := NewDashboardContainer(userRepo, roomRepo, serviceRepo, bookingRepo, orderRepo, requestRepo, logger)
 	wsHub := hub.NewWSHub(chatCtn.Svc)
 	sseCtn := NewSSEContainer(sseHub)
 	wsCtn := NewWSContainer(wsHub)
@@ -106,6 +108,7 @@ func NewContainer(
 		notificationCtn,
 		chatCtn,
 		reviewCtn,
+		dashboardCtn,
 		sseCtn,
 		wsCtn,
 		authMid,

@@ -164,6 +164,15 @@ func (r *serviceRepoImpl) FindServiceTypeBySlugWithActiveServiceDetails(ctx cont
 	return &serviceType, nil
 }
 
+func (r *serviceRepoImpl) CountService(ctx context.Context) (int64, error) {
+	var count int64
+	if err := r.db.WithContext(ctx).Model(&model.Service{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
 func (r *serviceRepoImpl) DeleteService(ctx context.Context, serviceID int64) error {
 	result := r.db.WithContext(ctx).Where("id = ?", serviceID).Delete(&model.Service{})
 	if result.Error != nil {

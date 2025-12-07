@@ -34,6 +34,8 @@ type RoomRepository interface {
 
 	DeleteRoom(ctx context.Context, roomID int64) error
 
+	CountRoom(ctx context.Context) (int64, error)
+
 	FindAllFloors(ctx context.Context) ([]*model.Floor, error)
 
 	FindAllRoomsWithDetailsPaginated(ctx context.Context, query types.RoomPaginationQuery) ([]*model.Room, int64, error)

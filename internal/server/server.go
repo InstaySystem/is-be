@@ -103,6 +103,7 @@ func NewServer(cfg *config.Config) (*Server, error) {
 	router.NotificationRouter(api, ctn.NotificationCtn.Hdl, ctn.AuthMid)
 	router.ChatRouter(api, ctn.ChatCtn.Hdl, ctn.AuthMid)
 	router.ReviewRouter(api, ctn.ReviewCtn.Hdl, ctn.AuthMid)
+	router.DashboardRouter(api, ctn.DashboardCtn.Hdl, ctn.AuthMid)
 	router.SSERouter(api, ctn.SSECtn.Hdl, ctn.AuthMid)
 	router.WSRouter(api, ctn.WSCtn.Hdl, ctn.AuthMid)
 

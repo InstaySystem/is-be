@@ -451,3 +451,19 @@ type ReviewResponse struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 	OrderRoomID int64     `json:"order_room_id"`
 }
+
+type DashboardResponse struct {
+	TotalStaff        int64                  `json:"total_staff"`
+	TotalRooms        int64                  `json:"total_rooms"`
+	TotalServices     int64                  `json:"total_services"`
+	TotalBookings     int64                  `json:"total_bookings"`
+	BookingRevenue    float64                `json:"booking_revenue"`
+	OrderServiceStats []*StatusChartResponse `json:"order_service_stats"`
+	RequestStats      []*StatusChartResponse `json:"request_stats"`
+}
+
+type StatusChartResponse struct {
+	Status     string  `json:"status"`
+	Count      int64   `json:"count"`
+	Percentage float64 `json:"percentage"`
+}

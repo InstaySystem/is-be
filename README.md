@@ -38,6 +38,7 @@ docker run -d -p 8080:8080 --name instay instay-be
 │   │   ├── 🐹 auth_container.go
 │   │   ├── 🐹 booking_container.go
 │   │   ├── 🐹 chat_container.go
+│   │   ├── 🐹 dashboard_container.go
 │   │   ├── 🐹 department_container.go
 │   │   ├── 🐹 file_container.go
 │   │   ├── 🐹 main_container.go
@@ -54,6 +55,7 @@ docker run -d -p 8080:8080 --name instay instay-be
 │   │   ├── 🐹 auth_handler.go
 │   │   ├── 🐹 booking_handler.go
 │   │   ├── 🐹 chat_handler.go
+│   │   ├── 🐹 dashboard_handler.go
 │   │   ├── 🐹 department_handler.go
 │   │   ├── 🐹 file_handler.go
 │   │   ├── 🐹 notification_handler.go
@@ -124,6 +126,7 @@ docker run -d -p 8080:8080 --name instay instay-be
 │   │   ├── 🐹 auth_router.go
 │   │   ├── 🐹 booking_router.go
 │   │   ├── 🐹 chat_router.go
+│   │   ├── 🐹 dashboard_router.go
 │   │   ├── 🐹 department.go
 │   │   ├── 🐹 file_router.go
 │   │   ├── 🐹 notification_router.go
@@ -142,6 +145,7 @@ docker run -d -p 8080:8080 --name instay instay-be
 │   │   │   ├── 🐹 auth_svc_impl.go
 │   │   │   ├── 🐹 booking_svc_impl.go
 │   │   │   ├── 🐹 chat_svc_impl.go
+│   │   │   ├── 🐹 dashboard_svc_impl.go
 │   │   │   ├── 🐹 department_svc_impl.go
 │   │   │   ├── 🐹 file_svc_impl.go
 │   │   │   ├── 🐹 notification_svc_impl.go
@@ -154,6 +158,7 @@ docker run -d -p 8080:8080 --name instay instay-be
 │   │   ├── 🐹 auth_service.go
 │   │   ├── 🐹 booking_service.go
 │   │   ├── 🐹 chat_service.go
+│   │   ├── 🐹 dashboard_service.go
 │   │   ├── 🐹 department_service.go
 │   │   ├── 🐹 file_service.go
 │   │   ├── 🐹 notification_service.go

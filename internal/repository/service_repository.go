@@ -47,5 +47,7 @@ type ServiceRepository interface {
 
 	FindServiceTypeBySlugWithActiveServiceDetails(ctx context.Context, serviceTypeSlug string) (*model.ServiceType, error)
 
+	CountService(ctx context.Context) (int64, error)
+
 	FindServiceBySlugWithServiceTypeAndServiceImages(ctx context.Context, serviceSlug string) (*model.Service, error)
 }

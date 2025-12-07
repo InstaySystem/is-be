@@ -25,4 +25,6 @@ type UserRepository interface {
 	Delete(ctx context.Context, id int64) error
 
 	CountActiveAdminExceptID(ctx context.Context, id int64) (int64, error)
+
+	Count(ctx context.Context) (int64, error)
 }

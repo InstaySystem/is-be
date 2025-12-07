@@ -37,6 +37,24 @@ func (r *bookingRepoImpl) FindBookingByIDWithSourceAndOrderRooms(ctx context.Con
 	return &booking, nil
 }
 
+func (r *bookingRepoImpl) CountBooking(ctx context.Context) (int64, error) {
+	var count int64
+	if err := r.db.WithContext(ctx).Model(&model.Booking{}).Count(&count).Error; err != nil {
+		return 0, err
+	}
+
+	return count, nil
+}
+
+func (r *bookingRepoImpl) SumBookingTotalSellPrice(ctx context.Context) (float64, error) {
+	var sum float64
+	if err := r.db.WithContext(ctx).Model(&model.Booking{}).Select("COALESCE(SUM(total_sell_price), 0)").Scan(&sum).Error; err != nil {
+		return 0, nil
+	}
+
+	return sum, nil
+}
+
 func (r *bookingRepoImpl) FindBookingByID(ctx context.Context, bookingID int64) (*model.Booking, error) {
 	var booking model.Booking
 	if err := r.db.WithContext(ctx).Where("id = ?", bookingID).First(&booking).Error; err != nil {
