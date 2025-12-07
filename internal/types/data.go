@@ -71,6 +71,24 @@ type RoomInUseResult struct {
 	InUse bool `gorm:"column:in_use"`
 }
 
+type DailyBookingResult struct {
+	Date         string  `gorm:"column:date"`
+	BookingCount int64   `gorm:"column:booking_count"`
+	Revenue      float64 `gorm:"column:revenue"`
+}
+
+type ChartData struct {
+	Label      string  `json:"label" gorm:"column:label"`
+	Value      float64 `json:"value" gorm:"column:value"`
+	Percentage float64 `json:"percentage" gorm:"-"`
+}
+
+type PopularRoomTypeChartData struct {
+	RoomTypeName string  `json:"room_type_name" gorm:"column:room_type_name"`
+	Count        int64   `json:"count" gorm:"column:count"`
+	Percentage   float64 `json:"percentage" gorm:"-"`
+}
+
 type OrderRoomData struct {
 	ID        int64     `json:"id"`
 	ExpiredAt time.Time `json:"expired_at"`

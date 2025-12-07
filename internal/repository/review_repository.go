@@ -15,4 +15,6 @@ type ReviewRepository interface {
 	FindAllPaginated(ctx context.Context, query types.ReviewPaginationQuery) ([]*model.Review, int64, error)
 
 	Update(ctx context.Context, id int64, updateData map[string]any) error
+
+	AverageRating(ctx context.Context) (float64, error)
 }

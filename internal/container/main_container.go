@@ -87,7 +87,7 @@ func NewContainer(
 	notificationCtn := NewNotificationContainer(db, notificationRepo, logger, sfGen)
 	chatCtn := NewChatContainer(db, chatRepo, orderRepo, sfGen, logger)
 	reviewCtn := NewReviewContainer(reviewRepo, sfGen, logger)
-	dashboardCtn := NewDashboardContainer(userRepo, roomRepo, serviceRepo, bookingRepo, orderRepo, requestRepo, logger)
+	dashboardCtn := NewDashboardContainer(userRepo, roomRepo, serviceRepo, bookingRepo, orderRepo, requestRepo, reviewRepo, logger)
 	wsHub := hub.NewWSHub(chatCtn.Svc)
 	sseCtn := NewSSEContainer(sseHub)
 	wsCtn := NewWSContainer(wsHub)

@@ -13,6 +13,8 @@ type OrderRepository interface {
 
 	CreateOrderServiceTx(tx *gorm.DB, orderService *model.OrderService) error
 
+	GetPopularRoomTypeStats(ctx context.Context) ([]*types.PopularRoomTypeChartData, error)
+
 	FindOrderRoomByIDWithRoom(ctx context.Context, orderRoomID int64) (*model.OrderRoom, error)
 
 	FindOrderRoomByIDWithBookingTx(tx *gorm.DB, orderRoomID int64) (*model.OrderRoom, error)

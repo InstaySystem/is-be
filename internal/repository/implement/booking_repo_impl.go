@@ -37,22 +37,67 @@ func (r *bookingRepoImpl) FindBookingByIDWithSourceAndOrderRooms(ctx context.Con
 	return &booking, nil
 }
 
-func (r *bookingRepoImpl) CountBooking(ctx context.Context) (int64, error) {
-	var count int64
-	if err := r.db.WithContext(ctx).Model(&model.Booking{}).Count(&count).Error; err != nil {
-		return 0, err
+func (r *bookingRepoImpl) GetBookingDateRange(ctx context.Context) (time.Time, time.Time, error) {
+	var result struct {
+		MinDate *time.Time
+		MaxDate *time.Time
 	}
 
-	return count, nil
+	if err := r.db.WithContext(ctx).Model(&model.Booking{}).Select("MIN(check_in) as min_date, MAX(check_in) as max_date").Scan(&result).Error; err != nil {
+		return time.Time{}, time.Time{}, err
+	}
+
+	if result.MinDate == nil || result.MaxDate == nil {
+		return time.Now(), time.Now(), nil
+	}
+
+	return *result.MinDate, *result.MaxDate, nil
+}
+
+func (r *bookingRepoImpl) GetDailyStats(ctx context.Context) ([]*types.DailyBookingResult, error) {
+	var results []*types.DailyBookingResult
+
+	if err := r.db.WithContext(ctx).Model(&model.Booking{}).
+		Select("DATE(check_in) as date, COUNT(id) as booking_count, COALESCE(SUM(total_sell_price), 0) as revenue").
+		Group("DATE(check_in)").Order("date ASC").Scan(&results).Error; err != nil {
+		return nil, err
+	}
+
+	return results, nil
+}
+
+func (r *bookingRepoImpl) CountBooking(ctx context.Context) (int64, error) {
+	var count int64
+	err := r.db.WithContext(ctx).Model(&model.Booking{}).Count(&count).Error
+
+	return count, err
 }
 
 func (r *bookingRepoImpl) SumBookingTotalSellPrice(ctx context.Context) (float64, error) {
 	var sum float64
-	if err := r.db.WithContext(ctx).Model(&model.Booking{}).Select("COALESCE(SUM(total_sell_price), 0)").Scan(&sum).Error; err != nil {
-		return 0, nil
-	}
+	err := r.db.WithContext(ctx).Model(&model.Booking{}).Select("COALESCE(SUM(total_sell_price), 0)").Scan(&sum).Error
 
-	return sum, nil
+	return sum, err
+}
+
+func (r *bookingRepoImpl) GetBookingCountBySource(ctx context.Context) ([]*types.ChartData, error) {
+	results := make([]*types.ChartData, 0)
+	err := r.db.WithContext(ctx).Table("bookings").
+		Select("sources.name as label, COUNT(bookings.id) as value").
+		Joins("JOIN sources ON sources.id = bookings.source_id").
+		Group("sources.name").
+		Scan(&results).Error
+	return results, err
+}
+
+func (r *bookingRepoImpl) GetRevenueBySource(ctx context.Context) ([]*types.ChartData, error) {
+	results := make([]*types.ChartData, 0)
+	err := r.db.WithContext(ctx).Table("bookings").
+		Select("sources.name as label, COALESCE(SUM(bookings.total_sell_price), 0) as value").
+		Joins("JOIN sources ON sources.id = bookings.source_id").
+		Group("sources.name").
+		Scan(&results).Error
+	return results, err
 }
 
 func (r *bookingRepoImpl) FindBookingByID(ctx context.Context, bookingID int64) (*model.Booking, error) {

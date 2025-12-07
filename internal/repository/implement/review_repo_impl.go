@@ -37,6 +37,14 @@ func (r *reviewRepoImpl) FindByOrderRoomID(ctx context.Context, orderRoomID int6
 	return &review, nil
 }
 
+func (r *reviewRepoImpl) AverageRating(ctx context.Context) (float64, error) {
+	var avg float64
+
+	err := r.db.WithContext(ctx).Model(&model.Review{}).Select("COALESCE(AVG(star), 0)").Scan(&avg).Error
+
+	return avg, err
+}
+
 func (r *reviewRepoImpl) Update(ctx context.Context, id int64, updateData map[string]any) error {
 	result := r.db.WithContext(ctx).Model(&model.Review{}).Where("id = ?", id).Updates(updateData)
 	if result.Error != nil {

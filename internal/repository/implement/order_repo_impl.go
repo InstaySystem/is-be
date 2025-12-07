@@ -42,6 +42,18 @@ func (r *orderRepoImpl) FindOrderRoomByIDWithRoom(ctx context.Context, orderRoom
 	return &orderRoom, nil
 }
 
+func (r *orderRepoImpl) GetPopularRoomTypeStats(ctx context.Context) ([]*types.PopularRoomTypeChartData, error) {
+	results := make([]*types.PopularRoomTypeChartData, 0)
+	err := r.db.WithContext(ctx).Table("order_rooms").
+		Select("room_types.name as room_type_name, COUNT(order_rooms.id) as count").
+		Joins("JOIN rooms ON rooms.id = order_rooms.room_id").
+		Joins("JOIN room_types ON room_types.id = rooms.room_type_id").
+		Group("room_types.id, room_types.name").
+		Order("count DESC").Limit(5).
+		Scan(&results).Error
+	return results, err
+}
+
 func (r *orderRepoImpl) OrderServiceStatusDistribution(ctx context.Context) ([]*types.StatusChartResponse, error) {
 	var results []*types.StatusChartResponse
 

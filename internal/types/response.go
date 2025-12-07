@@ -453,17 +453,32 @@ type ReviewResponse struct {
 }
 
 type DashboardResponse struct {
-	TotalStaff        int64                  `json:"total_staff"`
-	TotalRooms        int64                  `json:"total_rooms"`
-	TotalServices     int64                  `json:"total_services"`
-	TotalBookings     int64                  `json:"total_bookings"`
-	BookingRevenue    float64                `json:"booking_revenue"`
-	OrderServiceStats []*StatusChartResponse `json:"order_service_stats"`
-	RequestStats      []*StatusChartResponse `json:"request_stats"`
+	TotalStaff     int64   `json:"total_staff"`
+	TotalRooms     int64   `json:"total_rooms"`
+	TotalServices  int64   `json:"total_services"`
+	TotalBookings  int64   `json:"total_bookings"`
+	BookingRevenue float64 `json:"booking_revenue"`
+
+	AverageReviewRating float64 `json:"average_review_rating"`
+
+	BookingSourceStats   []*ChartData                `json:"booking_source_stats"`
+	ServiceUsageStats    []*ChartData                `json:"service_usage_stats"`
+	PopularRoomTypeStats []*PopularRoomTypeChartData `json:"popular_room_type_stats"`
+	RevenueSourceStats   []*ChartData                `json:"revenue_source_stats"`
+
+	OrderServiceStats []*StatusChartResponse       `json:"order_service_stats"`
+	RequestStats      []*StatusChartResponse       `json:"request_stats"`
+	DailyBookingStats []*DailyBookingChartResponse `json:"daily_booking_stats"`
 }
 
 type StatusChartResponse struct {
 	Status     string  `json:"status"`
 	Count      int64   `json:"count"`
 	Percentage float64 `json:"percentage"`
+}
+
+type DailyBookingChartResponse struct {
+	Date         string  `json:"date"`
+	BookingCount int64   `json:"booking_count"`
+	Revenue      float64 `json:"revenue"`
 }

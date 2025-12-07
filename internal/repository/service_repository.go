@@ -15,6 +15,8 @@ type ServiceRepository interface {
 
 	FindServiceTypeByID(ctx context.Context, serviceTypeID int64) (*model.ServiceType, error)
 
+	GetServiceUsageStats(ctx context.Context) ([]*types.ChartData, error)
+
 	UpdateServiceType(ctx context.Context, serviceTypeID int64, updateData map[string]any) error
 
 	DeleteServiceType(ctx context.Context, serviceTypeID int64) error

@@ -34,6 +34,17 @@ func (r *serviceRepoImpl) FindAllServiceTypesWithDetails(ctx context.Context) ([
 	return serviceTypes, nil
 }
 
+func (r *serviceRepoImpl) GetServiceUsageStats(ctx context.Context) ([]*types.ChartData, error) {
+	results := make([]*types.ChartData, 0)
+	err := r.db.WithContext(ctx).Table("order_services").
+		Select("services.name as label, COUNT(order_services.id) as value").
+		Joins("JOIN services ON services.id = order_services.service_id").
+		Group("services.name").
+		Order("value ASC").
+		Scan(&results).Error
+	return results, err
+}
+
 func (r *serviceRepoImpl) CountServiceByServiceTypeID(ctx context.Context, serviceTypeIDs []int64) (map[int64]int64, error) {
 	var counts []types.ServiceCountResult
 	if err := r.db.WithContext(ctx).
