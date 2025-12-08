@@ -162,7 +162,7 @@ func applyOrderServiceSorting(db *gorm.DB, query types.OrderServicePaginationQue
 		query.Order = "desc"
 	}
 
-	db = db.Order(query.Sort + "created_at " + strings.ToUpper(query.Order))
+	db = db.Order(query.Sort + " " + strings.ToUpper(query.Order))
 
 	return db
 }
