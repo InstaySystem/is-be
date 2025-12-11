@@ -1,5 +1,8 @@
 .git
+.gitignore
 Dockerfile
 temp
 Makefile
 logs
+README.md
+https
