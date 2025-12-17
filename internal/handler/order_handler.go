@@ -101,10 +101,11 @@ func (h *OrderHandler) VerifyOrderRoom(c *gin.Context) {
 		return
 	}
 
-	// isSecure := c.Request.TLS != nil || c.GetHeader("X-Forwarded-Proto") == "https"
+	isSecure := c.Request.TLS != nil || c.GetHeader("X-Forwarded-Proto") == "https"
+	domain := common.ExtractRootDomain(c.Request.Host)
 
 	c.SetSameSite(http.SameSiteLaxMode)
-	c.SetCookie(h.guestName, guestToken, int(ttl.Seconds()), "/", "", true, true)
+	c.SetCookie(h.guestName, guestToken, int(ttl.Seconds()), "/", domain, isSecure, true)
 
 	common.ToAPIResponse(c, http.StatusOK, "Order room verification successful", nil)
 }

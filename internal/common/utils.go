@@ -93,3 +93,35 @@ func GenerateBase58ID(size int) string {
 	rand.Read(b)
 	return base58.Encode(b)
 }
+
+func ExtractRootDomain(host string) string {
+	if idx := strings.Index(host, ":"); idx != -1 {
+		host = host[:idx]
+	}
+
+	if host == "localhost" || !strings.Contains(host, ".") {
+		return host
+	}
+
+	parts := strings.Split(host, ".")
+	if len(parts) == 4 {
+		isIP := true
+		for _, part := range parts {
+			for _, ch := range part {
+				if ch < '0' || ch > '9' {
+					isIP = false
+					break
+				}
+			}
+		}
+		if isIP {
+			return host
+		}
+	}
+
+	if len(parts) >= 2 {
+		return "." + parts[len(parts)-2] + "." + parts[len(parts)-1]
+	}
+
+	return host
+}
