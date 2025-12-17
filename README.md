@@ -20,8 +20,8 @@ docker run -d -p 8080:8080 --name instay instay-be
 │   └── 📁 api
 │       └── 🐹 main.go
 ├── 📁 configs
-│   └── ⚙️ example.yaml
-│   └── ⚙️ main.yaml
+│   └── ⚙️ example.yml
+│   └── ⚙️ main.yml
 ├── 📁 docs
 │   ├── 🐹 docs.go
 │   ├── ⚙️ swagger.json
