@@ -6,7 +6,7 @@ import (
 	"github.com/InstaySystem/is-be/internal/provider/cache"
 	"github.com/InstaySystem/is-be/internal/provider/jwt"
 	"github.com/InstaySystem/is-be/internal/provider/mq"
-	repoImpl "github.com/InstaySystem/is-be/internal/repository/implement"
+	"github.com/InstaySystem/is-be/internal/repository"
 	svcImpl "github.com/InstaySystem/is-be/internal/service/implement"
 	"github.com/InstaySystem/is-be/pkg/bcrypt"
 	"go.uber.org/zap"
@@ -20,13 +20,13 @@ type AuthContainer struct {
 func NewAuthContainer(
 	cfg *config.Config,
 	db *gorm.DB,
+	userRepo repository.UserRepository,
 	logger *zap.Logger,
 	bHash bcrypt.Hasher,
 	jwtProvider jwt.JWTProvider,
 	cacheProvider cache.CacheProvider,
 	mqProvider mq.MessageQueueProvider,
 ) *AuthContainer {
-	userRepo := repoImpl.NewUserRepository(db)
 	svc := svcImpl.NewAuthService(userRepo, logger, bHash, jwtProvider, cfg, cacheProvider, mqProvider)
 	hdl := handler.NewAuthHandler(svc, cfg)
 

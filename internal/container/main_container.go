@@ -76,7 +76,7 @@ func NewContainer(
 	reviewRepo := repoImpl.NewReviewRepository(db)
 
 	fileCtn := NewFileContainer(cfg, s3, logger)
-	authCtn := NewAuthContainer(cfg, db, logger, bHash, jwtProvider, cacheProvider, mqProvider)
+	authCtn := NewAuthContainer(cfg, db, userRepo, logger, bHash, jwtProvider, cacheProvider, mqProvider)
 	userCtn := NewUserContainer(userRepo, sfGen, logger, bHash, cfg.JWT.RefreshExpiresIn, cacheProvider)
 	departmentCtn := NewDepartmentContainer(departmentRepo, sfGen, logger)
 	serviceCtn := NewServiceContainer(db, serviceRepo, sfGen, logger, mqProvider)
